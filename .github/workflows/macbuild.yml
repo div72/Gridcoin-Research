@@ -25,7 +25,7 @@ jobs:
     - name: autogen
       run: ./autogen.sh
     - name: configure
-      run: ./configure
+      run: ./configure -disable-dependency-tracking --enable-reduce-exports --disable-asm
     - name: make
       run: make
     - name: make check

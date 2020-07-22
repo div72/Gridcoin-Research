@@ -46,3 +46,7 @@ fi
 if [[ $HOST = x86_64-apple-darwin* ]]; then
     DOCKER_EXEC "cd src/ && ../contrib/nomacro.pl"
 fi
+if [ "$NEED_XVFB" = "true" ]; then
+    DOCKER_EXEC export DISPLAY=:99.0
+    DOCKER_EXEC /sbin/start-stop-daemon --start --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac
+fi

@@ -52,29 +52,29 @@ after_script:
 jobs:
   include:
     - stage: test
-      name: 'ARM  [GOAL: install]  [buster]  [no tests]'
+      name: 'ARM  [GOAL: install]  [buster]'
       arch: arm64  # Can disable QEMU_USER_CMD and run the tests natively without qemu
       env: >-
         FILE_ENV="./ci/test/00_setup_env_arm.sh"
         QEMU_USER_CMD=""
         
     - stage: test
-      name: 'Win32  [no tests]'
+      name: 'Win32'
       env: >-
         FILE_ENV="./ci/test/00_setup_env_win32.sh"
 
     - stage: test
-      name: 'Win64  [unit tests]'
+      name: 'Win64'
       env: >-
         FILE_ENV="./ci/test/00_setup_env_win64.sh"
 
     - stage: test
-      name: 'i386 Linux  [GOAL: install]  [focal]  [no tests]'
+      name: 'i386 Linux  [GOAL: install]  [focal]'
       env: >-
         FILE_ENV="./ci/test/00_setup_env_linux_i386.sh"
 
     - stage: test
-      name: 'x86_64 Linux  [GOAL: install]  [GUI]  [focal]  [no tests, no depends]'
+      name: 'x86_64 Linux  [GOAL: install]  [GUI]  [focal]  [no depends]'
       env: >-
         FILE_ENV="./ci/test/00_setup_env_native.sh"
 

@@ -21,19 +21,25 @@ if [ -n "$USE_VALGRIND" ]; then
   END_FOLD
 fi
 
+if [ "$TRAVIS_OS_NAME" != "osx" ]; then
+  # This workaround is needed because fs_tests tries to write to /root otherwise on Travis.
+  export _HOME=$HOME
+  export HOME=/tmp
+fi
+
 if [ "$RUN_UNIT_TESTS" = "true" ]; then
   BEGIN_FOLD unit-tests
   if [ -n "$NEED_XVFB" ]; then
-    DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib HOME=/tmp xvfb-run make $MAKEJOBS check VERBOSE=1
+    DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib xvfb-run make $MAKEJOBS check VERBOSE=1
   else
-    DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib HOME=/tmp make $MAKEJOBS check VERBOSE=1
+    DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib make $MAKEJOBS check VERBOSE=1
   fi
   END_FOLD
 fi
 
 if [ "$RUN_UNIT_TESTS_SEQUENTIAL" = "true" ]; then
   BEGIN_FOLD unit-tests-seq
-  DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib HOME=/tmp "${BASE_BUILD_DIR}/gridcoin-*/src/test/test_gridcoin*" --catch_system_errors=no -l test_suite
+  DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib "${BASE_BUILD_DIR}/gridcoin-*/src/test/test_gridcoin*" --catch_system_errors=no -l test_suite
   END_FOLD
 fi
 

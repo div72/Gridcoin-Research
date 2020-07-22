@@ -23,13 +23,13 @@ fi
 
 if [ "$RUN_UNIT_TESTS" = "true" ]; then
   BEGIN_FOLD unit-tests
-  DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib make $MAKEJOBS check VERBOSE=1
+  DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib HOME=/tmp make $MAKEJOBS check VERBOSE=1
   END_FOLD
 fi
 
 if [ "$RUN_UNIT_TESTS_SEQUENTIAL" = "true" ]; then
   BEGIN_FOLD unit-tests-seq
-  DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib "${BASE_BUILD_DIR}/gridcoin-*/src/test/test_gridcoin*" --catch_system_errors=no -l test_suite
+  DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib HOME=/tmp "${BASE_BUILD_DIR}/gridcoin-*/src/test/test_gridcoin*" --catch_system_errors=no -l test_suite
   END_FOLD
 fi
 

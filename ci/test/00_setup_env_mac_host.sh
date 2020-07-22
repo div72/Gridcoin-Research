@@ -13,5 +13,5 @@ export GRIDCOIN_CONFIG="--with-gui --enable-reduce-exports"
 export NO_DEPENDS=1
 export OSX_SDK=""
 export CCACHE_SIZE=300M
-export RUN_UNIT_TESTS=false
+export RUN_UNIT_TESTS=true
 export RUN_FUNCTIONAL_TESTS=false

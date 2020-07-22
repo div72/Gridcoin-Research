@@ -14,5 +14,5 @@ export RUN_UNIT_TESTS=true
 # export RUN_FUNCTIONAL_TESTS=false
 # export RUN_SECURITY_TESTS="true"
 export GOAL=""
-export GRIDCOIN_CONFIG="--enable-reduce-exports --with-gui=qt5"
+export GRIDCOIN_CONFIG="--enable-reduce-exports --with-gui=qt5 --enable-qt59"
 export NEED_XVFB=1

@@ -23,7 +23,11 @@ fi
 
 if [ "$RUN_UNIT_TESTS" = "true" ]; then
   BEGIN_FOLD unit-tests
-  DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib HOME=/tmp make $MAKEJOBS check VERBOSE=1
+  if [ -n "$NEED_XVFB" ]; then
+    DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib HOME=/tmp xvfb-run make $MAKEJOBS check VERBOSE=1
+  else
+    DOCKER_EXEC LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib HOME=/tmp make $MAKEJOBS check VERBOSE=1
+  fi
   END_FOLD
 fi
 

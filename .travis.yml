@@ -17,6 +17,8 @@ dist: bionic
 os: linux
 language: shell
 arch: amd64
+services:
+  - xvfb
 cache:
   ccache: true
   directories:

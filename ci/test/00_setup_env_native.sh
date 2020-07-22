@@ -13,5 +13,6 @@ export RUN_UNIT_TESTS=true
 # export RUN_FUNCTIONAL_TESTS=false
 # export RUN_SECURITY_TESTS="true"
 export GOAL="install"
-export GRIDCOIN_CONFIG="--enable-reduce-exports --with-incompatible-bdb"
+export GRIDCOIN_CONFIG="--enable-reduce-exports --with-incompatible-bdb --with-gui=qt5"
+export NEED_XVFB=1
 export NO_DEPENDS=1

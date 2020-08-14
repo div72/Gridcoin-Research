@@ -229,7 +229,7 @@ RPCConsole::RPCConsole(QWidget *parent) :
     ui->lineEdit->installEventFilter(this);
     ui->messagesWidget->installEventFilter(this);
 
-    connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(clear()));
+    connect(ui->clearButton, &QPushButton::clicked, this, &RPCConsole::clear);
 
     // set OpenSSL version label
     ui->openSSLVersion->setText(SSLeay_version(SSLEAY_VERSION));
@@ -294,12 +294,12 @@ void RPCConsole::setClientModel(ClientModel *model)
     if(model && clientModel->getPeerTableModel() && clientModel->getBanTableModel())
     {
         // Subscribe to information, replies, messages, errors
-        connect(model, SIGNAL(numConnectionsChanged(int)), this, SLOT(setNumConnections(int)));
-        connect(model, SIGNAL(numBlocksChanged(int,int)), this, SLOT(setNumBlocks(int,int)));
-        connect(model, SIGNAL(updateScraperLog(QString)), this, SLOT(displayScraperLogMessage(QString)));
+        connect(model, &ClientModel::numConnectionsChanged, this, &RPCConsole::setNumConnections);
+        connect(model, &ClientModel::numBlocksChanged, this, &RPCConsole::setNumBlocks);
+        connect(model, &ClientModel::updateScraperLog, this, &RPCConsole::displayScraperLogMessage);
 
         updateTrafficStats(model->getTotalBytesRecv(), model->getTotalBytesSent());
-        connect(model, SIGNAL(bytesChanged(quint64,quint64)), this, SLOT(updateTrafficStats(quint64, quint64)));
+        connect(model, &ClientModel::bytesChanged, this, &RPCConsole::updateTrafficStats);
 
         // set up peer table
         ui->peerWidget->setModel(model->getPeerTableModel());
@@ -348,7 +348,7 @@ void RPCConsole::setClientModel(ClientModel *model)
         connect(banAction24h, &QAction::triggered, signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         connect(banAction7d, &QAction::triggered, signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         connect(banAction365d, &QAction::triggered, signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
-        connect(signalMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &RPCConsole::banSelectedNode);
+        connect(signalMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mappedInt), this, &RPCConsole::banSelectedNode);
 
         // peer table context menu signals
         connect(ui->peerWidget, &QTableView::customContextMenuRequested, this, &RPCConsole::showPeersTableContextMenu);
@@ -536,18 +536,18 @@ void RPCConsole::startExecutor()
     executor->moveToThread(thread);
 
     // Notify executor when thread started (in executor thread)
-    connect(thread, SIGNAL(started()), executor, SLOT(start()));
+    connect(thread, &QThread::started, executor, &RPCExecutor::start);
     // Replies from executor object must go to this object
-    connect(executor, SIGNAL(reply(int,QString)), this, SLOT(message(int,QString)));
+    connect(executor, &RPCExecutor::reply, this, [this](int cat, const QString &msg){this->message(cat, msg, true);});
     // Requests from this object must go to executor
-    connect(this, SIGNAL(cmdRequest(QString)), executor, SLOT(request(QString)));
+    connect(this, &RPCConsole::cmdRequest, executor, &RPCExecutor::request);
     // On stopExecutor signal
     // - queue executor for deletion (in execution thread)
     // - quit the Qt event loop in the execution thread
-    connect(this, SIGNAL(stopExecutor()), executor, SLOT(deleteLater()));
-    connect(this, SIGNAL(stopExecutor()), thread, SLOT(quit()));
+    connect(this, &RPCConsole::stopExecutor, executor, &RPCExecutor::deleteLater);
+    connect(this, &RPCConsole::stopExecutor, thread, &QThread::quit);
     // Queue the thread for deletion (in this thread) when it is finished
-    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 
     // Default implementation of QThread::run() simply spins up an event loop in the thread,
     // which is what we want.

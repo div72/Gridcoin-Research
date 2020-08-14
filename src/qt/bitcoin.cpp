@@ -445,7 +445,7 @@ int StartGridcoinQt(int argc, char *argv[])
         QTimer *timer = new QTimer(guiref);
         LogPrintf("Starting Gridcoin");
 
-        QObject::connect(timer, SIGNAL(timeout()), guiref, SLOT(timerfire()));
+        QObject::connect(timer, &QTimer::timeout, guiref, &timerfire);
 
       if (!threads->createThread(ThreadAppInit2,threads,"AppInit2 Thread"))
         {

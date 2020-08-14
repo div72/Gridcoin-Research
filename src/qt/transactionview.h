@@ -60,7 +60,6 @@ private:
 private slots:
     void contextualMenu(const QPoint &);
     void dateRangeChanged();
-    void showDetails();
     void copyAddress();
     void editLabel();
     void copyLabel();
@@ -75,6 +74,7 @@ public slots:
     void chooseType(int idx);
     void changedPrefix(const QString &prefix);
     void changedAmount(const QString &amount);
+    void showDetails();
     void exportClicked();
     void focusTransaction(const QModelIndex&);
 

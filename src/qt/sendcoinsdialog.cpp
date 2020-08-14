@@ -30,14 +30,14 @@ SendCoinsDialog::SendCoinsDialog(QWidget *parent) :
     ui->setupUi(this);
     addEntry();
 
-    connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addEntry()));
-    connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(clear()));
+    connect(ui->addButton, &QPushButton::clicked, this, &SendCoinsDialog::addEntry);
+    connect(ui->clearButton, &QPushButton::clicked, this, &SendCoinsDialog::clear);
 
     // Coin Control
     ui->coinControlChangeEdit->setFont(GUIUtil::bitcoinAddressFont());
-    connect(ui->coinControlPushButton, SIGNAL(clicked()), this, SLOT(coinControlButtonClicked()));
-    connect(ui->coinControlChangeCheckBox, SIGNAL(stateChanged(int)), this, SLOT(coinControlChangeChecked(int)));
-    connect(ui->coinControlChangeEdit, SIGNAL(textEdited(const QString &)), this, SLOT(coinControlChangeEdited(const QString &)));
+    connect(ui->coinControlPushButton, &QPushButton::clicked, this, &SendCoinsDialog::coinControlButtonClicked);
+    connect(ui->coinControlChangeCheckBox, &QCheckBox::stateChanged, this, &SendCoinsDialog::coinControlChangeChecked);
+    connect(ui->coinControlChangeEdit, &QLineEdit::textEdited, this, &SendCoinsDialog::coinControlChangeEdited);
 
     // Coin Control: clipboard actions
     QAction *clipboardQuantityAction = new QAction(tr("Copy quantity"), this);
@@ -48,14 +48,14 @@ SendCoinsDialog::SendCoinsDialog(QWidget *parent) :
     QAction *clipboardPriorityAction = new QAction(tr("Copy priority"), this);
     QAction *clipboardLowOutputAction = new QAction(tr("Copy low output"), this);
     QAction *clipboardChangeAction = new QAction(tr("Copy change"), this);
-    connect(clipboardQuantityAction, SIGNAL(triggered()), this, SLOT(coinControlClipboardQuantity()));
-    connect(clipboardAmountAction, SIGNAL(triggered()), this, SLOT(coinControlClipboardAmount()));
-    connect(clipboardFeeAction, SIGNAL(triggered()), this, SLOT(coinControlClipboardFee()));
-    connect(clipboardAfterFeeAction, SIGNAL(triggered()), this, SLOT(coinControlClipboardAfterFee()));
-    connect(clipboardBytesAction, SIGNAL(triggered()), this, SLOT(coinControlClipboardBytes()));
-    connect(clipboardPriorityAction, SIGNAL(triggered()), this, SLOT(coinControlClipboardPriority()));
-    connect(clipboardLowOutputAction, SIGNAL(triggered()), this, SLOT(coinControlClipboardLowOutput()));
-    connect(clipboardChangeAction, SIGNAL(triggered()), this, SLOT(coinControlClipboardChange()));
+    connect(clipboardQuantityAction, &QAction::triggered, this, &SendCoinsDialog::coinControlClipboardQuantity);
+    connect(clipboardAmountAction, &QAction::triggered, this, &SendCoinsDialog::coinControlClipboardAmount);
+    connect(clipboardFeeAction, &QAction::triggered, this, &SendCoinsDialog::coinControlClipboardFee);
+    connect(clipboardAfterFeeAction, &QAction::triggered, this, &SendCoinsDialog::coinControlClipboardAfterFee);
+    connect(clipboardBytesAction, &QAction::triggered, this, &SendCoinsDialog::coinControlClipboardBytes);
+    connect(clipboardPriorityAction, &QAction::triggered, this, &SendCoinsDialog::coinControlClipboardPriority);
+    connect(clipboardLowOutputAction, &QAction::triggered, this, &SendCoinsDialog::coinControlClipboardLowOutput);
+    connect(clipboardChangeAction, &QAction::triggered, this, &SendCoinsDialog::coinControlClipboardChange);
     ui->coinControlQuantityLabel->addAction(clipboardQuantityAction);
     ui->coinControlAmountLabel->addAction(clipboardAmountAction);
     ui->coinControlFeeLabel->addAction(clipboardFeeAction);
@@ -83,15 +83,15 @@ void SendCoinsDialog::setModel(WalletModel *model)
     if(model && model->getOptionsModel())
     {
         setBalance(model->getBalance(), model->getStake(), model->getUnconfirmedBalance(), model->getImmatureBalance());
-        connect(model, SIGNAL(balanceChanged(qint64, qint64, qint64, qint64)), this, SLOT(setBalance(qint64, qint64, qint64, qint64)));
-        connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
+        connect(model, &WalletModel::balanceChanged, this, &SendCoinsDialog::setBalance);
+        connect(model->getOptionsModel(), &OptionsModel::displayUnitChanged, this, &SendCoinsDialog::updateDisplayUnit);
 
         // Update icons according to the stylesheet
-        connect(model->getOptionsModel(),SIGNAL(walletStylesheetChanged(QString)), this, SLOT(updateIcons()));
+        connect(model->getOptionsModel(), &OptionsModel::walletStylesheetChanged, this, &SendCoinsDialog::updateIcons);
 
         // Coin Control
-        connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(coinControlUpdateLabels()));
-        connect(model->getOptionsModel(), SIGNAL(coinControlFeaturesChanged(bool)), this, SLOT(coinControlFeatureChanged(bool)));
+        connect(model->getOptionsModel(), &OptionsModel::displayUnitChanged, this, &SendCoinsDialog::coinControlUpdateLabels);
+        connect(model->getOptionsModel(), &OptionsModel::coinControlFeaturesChanged, this, &SendCoinsDialog::coinControlFeatureChanged);
         ui->frameCoinControl->setVisible(model->getOptionsModel()->getCoinControlFeatures());
         coinControlUpdateLabels();
 
@@ -248,8 +248,8 @@ SendCoinsEntry *SendCoinsDialog::addEntry()
     SendCoinsEntry *entry = new SendCoinsEntry(this);
     entry->setModel(model);
     ui->entries->addWidget(entry);
-    connect(entry, SIGNAL(removeEntry(SendCoinsEntry*)), this, SLOT(removeEntry(SendCoinsEntry*)));
-    connect(entry, SIGNAL(payAmountChanged()), this, SLOT(coinControlUpdateLabels()));
+    connect(entry, &SendCoinsEntry::removeEntry, this, &SendCoinsDialog::removeEntry);
+    connect(entry, &SendCoinsEntry::payAmountChanged, this, &SendCoinsDialog::coinControlUpdateLabels);
 
     updateRemoveEnabled();
 

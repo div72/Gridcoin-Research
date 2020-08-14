@@ -625,14 +625,14 @@ void DiagnosticsDialog::VerifyClock()
     QTimer *timerVerifyClock = new QTimer();
 
     // Set up a timeout clock of 10 seconds as a fail-safe.
-    connect(timerVerifyClock, SIGNAL(timeout()), this, SLOT(clkFinished()));
+    connect(timerVerifyClock, &QTimer::timeout, this, &DiagnosticsDialog::clkFinished);
     timerVerifyClock->start(10 * 1000);
 
     QHostInfo NTPHost = QHostInfo::fromName("pool.ntp.org");
     udpSocket = new QUdpSocket(this);
 
-    connect(udpSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(clkStateChanged(QAbstractSocket::SocketState)));
-    connect(udpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(clkSocketError()));
+    connect(udpSocket, &QUdpSocket::stateChanged, this, &DiagnosticsDialog::clkStateChanged);
+    connect(udpSocket, static_cast<QAbstractSocket::SocketError (QUdpSocket::*)() const>(&QUdpSocket::error), this, static_cast<void (DiagnosticsDialog::*)()>(&DiagnosticsDialog::clkSocketError));
 
     udpSocket->connectToHost(QHostAddress(NTPHost.addresses().first()), 123, QIODevice::ReadWrite);
 }
@@ -641,7 +641,7 @@ void DiagnosticsDialog::clkStateChanged(QAbstractSocket::SocketState state)
 {
     if (state == QAbstractSocket::ConnectedState)
     {
-        connect(udpSocket, SIGNAL(readyRead()), this, SLOT(clkFinished()));
+        connect(udpSocket, &QUdpSocket::readyRead, this, &DiagnosticsDialog::clkFinished);
 
         char NTPMessage[48] = {0x1b, 0, 0, 0 ,0, 0, 0, 0, 0};
 
@@ -735,8 +735,8 @@ void DiagnosticsDialog::VerifyTCPPort()
 {
     tcpSocket = new QTcpSocket(this);
 
-    connect(tcpSocket, SIGNAL(connected()), this, SLOT(TCPFinished()));
-    connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(TCPFailed(QAbstractSocket::SocketError)));
+    connect(tcpSocket, &QTcpSocket::connected, this, &DiagnosticsDialog::TCPFinished);
+    connect(tcpSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, static_cast<void (DiagnosticsDialog::*)(QAbstractSocket::SocketError)>(&DiagnosticsDialog::TCPFailed));
 
     tcpSocket->connectToHost("portquiz.net", GetListenPort());
 }

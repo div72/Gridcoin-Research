@@ -364,7 +364,7 @@ VotingDialog::VotingDialog(QWidget *parent)
     filterTQAU = new QLineEdit();
     filterTQAU->setMaximumWidth(350);
     filterhlayout->addWidget(filterTQAU);
-    connect(filterTQAU, SIGNAL(textChanged(QString)), this, SLOT(filterTQAUChanged(QString)));
+    connect(filterTQAU, &QLineEdit::textChanged, this, &VotingDialog::filterTQAUChanged);
     filterhlayout->addStretch();
 
     // buttons in horizontal layout
@@ -375,19 +375,19 @@ VotingDialog::VotingDialog(QWidget *parent)
     resetButton->setText(tr("Reload Polls"));
     resetButton->setMaximumWidth(150);
     groupboxhlayout->addWidget(resetButton);
-    connect(resetButton, SIGNAL(clicked()), this, SLOT(resetData()));
+    connect(resetButton, &QPushButton::clicked, this, &VotingDialog::resetData);
 
     QPushButton *histButton = new QPushButton();
     histButton->setText(tr("Load History"));
     histButton->setMaximumWidth(150);
     groupboxhlayout->addWidget(histButton);
-    connect(histButton, SIGNAL(clicked()), this, SLOT(loadHistory()));
+    connect(histButton, &QPushButton::clicked, this, &VotingDialog::loadHistory);
 
     QPushButton *newPollButton = new QPushButton();
     newPollButton->setText(tr("Create Poll"));
     newPollButton->setMaximumWidth(150);
     groupboxhlayout->addWidget(newPollButton);
-    connect(newPollButton, SIGNAL(clicked()), this, SLOT(showNewPollDialog()));
+    connect(newPollButton, &QPushButton::clicked, this, &VotingDialog::showNewPollDialog);
 
     groupboxhlayout->addStretch();
 
@@ -396,8 +396,8 @@ VotingDialog::VotingDialog(QWidget *parent)
     tableView_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     // tableView_->setTabKeyNavigation(false);
     tableView_->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(tableView_, SIGNAL(customContextMenuRequested(const QPoint &)),
-        this, SLOT(showContextMenu(const QPoint &)));
+    connect(tableView_, &QWidget::customContextMenuRequested,
+        this, &VotingDialog::showContextMenu);
     tableView_->setAlternatingRowColors(true);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setSortingEnabled(true);
@@ -416,7 +416,7 @@ VotingDialog::VotingDialog(QWidget *parent)
     // have to track the running state ourselves. See
     // https://bugreports.qt.io/browse/QTBUG-12358
     watcher.setProperty("running", false);
-    connect(&watcher, SIGNAL(finished()), this, SLOT(onLoadingFinished()));
+    connect(&watcher, &QFutureWatcher<void>::finished, this, &VotingDialog::onLoadingFinished);
     loadingIndicator = new QLabel(this);
     loadingIndicator->move(50,170);
 
@@ -583,8 +583,8 @@ void VotingDialog::showContextMenu(const QPoint &pos)
     QPoint globalPos = tableView_->viewport()->mapToGlobal(pos);
 
     QMenu menu;
-    menu.addAction("Show Results", this, SLOT(showChartDialog()));
-    menu.addAction("Vote", this, SLOT(showVoteDialog()));
+    menu.addAction("Show Results", this, &VotingDialog::showChartDialog);
+    menu.addAction("Vote", this, &VotingDialog::showVoteDialog);
     menu.exec(globalPos);
 }
 
@@ -818,7 +818,7 @@ VotingVoteDialog::VotingVoteDialog(QWidget *parent)
     QPushButton *voteButton = new QPushButton();
     voteButton->setText(tr("Vote"));
     hlayout->addWidget(voteButton);
-    connect(voteButton, SIGNAL(clicked()), this, SLOT(vote()));
+    connect(voteButton, &QPushButton::clicked, this, &VotingVoteDialog::vote);
 
     voteNote_ = new QLabel();
     voteNote_->setAlignment(Qt::AlignLeft|Qt::AlignVCenter);
@@ -980,9 +980,9 @@ NewPollDialog::NewPollDialog(QWidget *parent)
     //answers
     answerList_ = new QListWidget(this);
     answerList_->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(answerList_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(showContextMenu(const QPoint &)));
+    connect(answerList_, &QWidget::customContextMenuRequested, this, &NewPollDialog::showContextMenu);
     vlayout->addWidget(answerList_);
-    connect (answerList_, SIGNAL (itemDoubleClicked (QListWidgetItem *)), this, SLOT (editItem (QListWidgetItem *)));
+    connect (answerList_, &QListWidget::itemDoubleClicked, this, &NewPollDialog::editItem);
 
     QHBoxLayout *hlayoutTools = new QHBoxLayout();
     vlayout->addLayout(hlayoutTools);
@@ -990,17 +990,17 @@ NewPollDialog::NewPollDialog(QWidget *parent)
     QPushButton *addItemButton = new QPushButton();
     addItemButton->setText(tr("Add Item"));
     hlayoutTools->addWidget(addItemButton);
-    connect(addItemButton, SIGNAL(clicked()), this, SLOT(addItem()));
+    connect(addItemButton, &QPushButton::clicked, this, &NewPollDialog::addItem);
 
     QPushButton *removeItemButton = new QPushButton();
     removeItemButton->setText(tr("Remove Item"));
     hlayoutTools->addWidget(removeItemButton);
-    connect(removeItemButton, SIGNAL(clicked()), this, SLOT(removeItem()));
+    connect(removeItemButton, &QPushButton::clicked, this, &NewPollDialog::removeItem);
 
     QPushButton *clearAllButton = new QPushButton();
     clearAllButton->setText(tr("Clear All"));
     hlayoutTools->addWidget(clearAllButton);
-    connect(clearAllButton, SIGNAL(clicked()), this, SLOT(resetData()));
+    connect(clearAllButton, &QPushButton::clicked, this, &NewPollDialog::resetData);
 
     QHBoxLayout *hlayoutBottom = new QHBoxLayout();
     vlayout->addLayout(hlayoutBottom);
@@ -1008,7 +1008,7 @@ NewPollDialog::NewPollDialog(QWidget *parent)
     QPushButton *pollButton = new QPushButton();
     pollButton->setText(tr("Create Poll"));
     hlayoutBottom->addWidget(pollButton);
-    connect(pollButton, SIGNAL(clicked()), this, SLOT(createPoll()));
+    connect(pollButton, &QPushButton::clicked, this, &NewPollDialog::createPoll);
 
     pollNote_ = new QLabel();
     pollNote_->setAlignment(Qt::AlignLeft|Qt::AlignVCenter);
@@ -1107,7 +1107,7 @@ void NewPollDialog::showContextMenu(const QPoint &pos)
     QPoint globalPos = answerList_->viewport()->mapToGlobal(pos);
 
     QMenu menu;
-    menu.addAction("Add Item", this, SLOT(addItem()));
-    menu.addAction("Remove Item", this, SLOT(removeItem()));
+    menu.addAction("Add Item", this, &NewPollDialog::addItem);
+    menu.addAction("Remove Item", this, &NewPollDialog::removeItem);
     menu.exec(globalPos);
 }

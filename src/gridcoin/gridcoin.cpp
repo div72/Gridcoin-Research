@@ -1,3 +1,4 @@
+#include "chainparams.h"
 #include "main.h"
 #include "gridcoin/backup.h"
 #include "gridcoin/contract/contract.h"
@@ -51,7 +52,7 @@ bool InitializeResearchRewardAccounting(CBlockIndex* pindexBest)
     LogPrintf("Gridcoin: initializing research reward accounting...");
     uiInterface.InitMessage(_("Initializing research reward accounting..."));
 
-    const int64_t start_height = GetResearchAgeThreshold();
+    const int64_t start_height = Params().GetConsensus().ResearchAgeHeight;
 
     if (!Tally::Initialize(BlockFinder().FindByHeight(start_height))) {
         return error("Failed to initialize tally.");

@@ -64,7 +64,7 @@ elif [ "$CI_USE_APT_INSTALL" != "no" ]; then
   fi
 fi
 
-if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+if [ "$OS_NAME" == "macos" ]; then
   top -l 1 -s 0 | awk ' /PhysMem/ {print}'
   echo "Number of CPUs: $(sysctl -n hw.logicalcpu)"
 else

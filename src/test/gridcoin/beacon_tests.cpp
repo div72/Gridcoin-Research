@@ -1057,6 +1057,7 @@ BOOST_AUTO_TEST_CASE(beaconstorage_testnet_test)
 BOOST_AUTO_TEST_CASE(beaconstorage_mainnet_test)
 {
     fs::path path = fs::system_complete(boost::unit_test::framework::master_test_suite().argv[0]).parent_path() / "data/mainnet_beacon.bin";
+    BOOST_CHECK_EQUAL(path, "");
     CAutoFile data_file(fsbridge::fopen(path, "rb"), SER_DISK, PROTOCOL_VERSION);
 
     GRC::BeaconRegistry& registry = GRC::GetBeaconRegistry();

@@ -114,8 +114,9 @@ void CDBEnv::MakeMock()
 {
     int major, minor;
     db_version(&major, &minor, nullptr);
-    std::cout << "compiled: " << DB_VERSION_MAJOR << "." << DB_VERSION_MINOR << "; running: " << major << "." << minor << std::endl;
-    assert(false);
+    std::string outp;
+    outp << "compiled: " << DB_VERSION_MAJOR << "." << DB_VERSION_MINOR << "; running: " << major << "." << minor;
+    throw runtime_error(outp);
     if (fDbEnvInit)
         throw runtime_error("CDBEnv::MakeMock(): already initialized");
 

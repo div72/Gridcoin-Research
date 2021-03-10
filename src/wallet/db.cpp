@@ -112,6 +112,9 @@ bool CDBEnv::Open(fs::path pathEnv_)
 
 void CDBEnv::MakeMock()
 {
+    int major, minor;
+    db_version(&major, &minor, nullptr);
+    throw runtime_error("compiled: " << DB_VERSION_MAJOR << "." << DB_VERSION_MINOR << "; running: " << major << "." << minor);
     if (fDbEnvInit)
         throw runtime_error("CDBEnv::MakeMock(): already initialized");
 

@@ -102,5 +102,5 @@ if [ "$USE_BUSY_BOX" = "true" ]; then
   # shellcheck disable=SC1010
   DOCKER_EXEC for util in \$\(busybox --list \| grep -v "^ar$" \| grep -v "^tar$" \| grep -v "^find$"\)\; do ln -s \$\(command -v busybox\) $BASE_SCRATCH_DIR/bins/\$util\; done
   # Print BusyBox version
-  DOCKER_EXEC patch --help
+  DOCKER_EXEC busybox \| head -1
 fi

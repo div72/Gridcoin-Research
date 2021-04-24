@@ -1532,7 +1532,16 @@ bool CWallet::SelectCoinsMinConf(int64_t nTargetValue, unsigned int nSpendTime, 
     vector<pair<int64_t, pair<const CWalletTx*,unsigned int> > > vValue;
     int64_t nTotalLower = 0;
 
-    random_shuffle(vCoins.begin(), vCoins.end(), GetRandInt);
+    // A wrapper for GetRandInt to satisfy std::shuffle's UniformRandomBitGenerator requirements.
+    // TODO: Port FastRandomContext and replace this.
+    class {
+    public:
+        typedef int result_type;
+        static constexpr int min() { return 0; }
+        static constexpr uint64_t max() { return 0x7FFFFFFF; }
+        inline uint64_t operator()() noexcept { return GetRandInt(0x7FFFFFFF); }
+    } urbg;
+    std::shuffle(vCoins.begin(), vCoins.end(), urbg);
 
     for (auto output : vCoins)
     {

@@ -1520,6 +1520,20 @@ struct smallestcoincomp
     }
 };
 
+template <typename I>
+void Shuffle(I first, I last)
+{
+    while (first != last) {
+        uint64_t j = GetRand(last - first);
+        if (j) {
+            using std::swap;
+            swap(*first, *(first + j));
+        }
+        ++first;
+    }
+}
+
+
 bool CWallet::SelectCoinsMinConf(int64_t nTargetValue, unsigned int nSpendTime, int nConfMine, int nConfTheirs, vector<COutput> vCoins, set<pair<const CWalletTx*,unsigned int> >& setCoinsRet, int64_t& nValueRet) const
 {
     setCoinsRet.clear();
@@ -1532,16 +1546,7 @@ bool CWallet::SelectCoinsMinConf(int64_t nTargetValue, unsigned int nSpendTime, 
     vector<pair<int64_t, pair<const CWalletTx*,unsigned int> > > vValue;
     int64_t nTotalLower = 0;
 
-    // A wrapper for GetRandInt to satisfy std::shuffle's UniformRandomBitGenerator requirements.
-    // TODO: Port FastRandomContext and replace this.
-    class {
-    public:
-        typedef int result_type;
-        static constexpr int min() { return 0; }
-        static constexpr uint64_t max() { return 0x7FFFFFFF; }
-        inline uint64_t operator()() noexcept { return GetRandInt(0x7FFFFFFF); }
-    } urbg;
-    std::shuffle(vCoins.begin(), vCoins.end(), urbg);
+    Shuffle(vCoins.begin(), vCoins.end());
 
     for (auto output : vCoins)
     {

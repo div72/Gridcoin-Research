@@ -3,7 +3,9 @@
 
 #include <QDialogButtonBox>
 #include <QDialog>
+#include <QWizard>
 #include <QString>
+#include <QLabel>
 
 namespace Ui {
     class ConsolidateUnspentDialog;
@@ -14,7 +16,7 @@ class ConsolidateUnspentDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ConsolidateUnspentDialog(QWidget *parent = 0, size_t inputSelectionLimit = 600);
+    explicit ConsolidateUnspentDialog(QWidget *parent = nullptr, size_t inputSelectionLimit = 600);
     ~ConsolidateUnspentDialog();
 
     void SetAddressList(const std::map<QString, QString>& addressList);

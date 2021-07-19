@@ -80,8 +80,8 @@ Section -Main SEC0000
     SetOutPath $INSTDIR\daemon
     File @abs_top_srcdir@/release/@GRIDCOIN_DAEMON_NAME@@EXEEXT@
     SetOutPath $INSTDIR\doc
-    File /oname=COPYING.txt @abs_top_srcdir@/COPYING
-    File /oname=CHANGELOG.md @abs_top_srcdir@/CHANGELOG.md
+    File /oname=COPYING.txt @abs_srcdir@/COPYING
+    File /oname=CHANGELOG.md @abs_srcdir@/CHANGELOG.md
     SetOutPath $INSTDIR
     WriteRegStr HKCU "${REGKEY}\Components" Main 1
 SectionEnd

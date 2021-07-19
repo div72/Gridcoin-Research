@@ -15,16 +15,13 @@ fi
 
 # Create folders that are mounted into the docker
 mkdir -p "${CCACHE_DIR}"
-mkdir -p "${PREVIOUS_RELEASES_DIR}"
+mkdir -p "/tmp/release"
 
 env | grep -E '^(GRIDCOIN_CONFIG|BASE_|QEMU_|CCACHE_|LC_ALL|BOOST_TEST_RANDOM|DEBIAN_FRONTEND|CONFIG_SHELL|(ASAN|LSAN|TSAN|UBSAN)_OPTIONS|PREVIOUS_RELEASES_DIR)' | tee /tmp/env
-if [[ $HOST = *-mingw32 ]]; then
-  DOCKER_ADMIN="--cap-add SYS_ADMIN"
-elif [[ $GRIDCOIN_CONFIG = *--with-sanitizers=*address* ]]; then # If ran with (ASan + LSan), Docker needs access to ptrace (https://github.com/google/sanitizers/issues/764)
-  DOCKER_ADMIN="--cap-add SYS_PTRACE"
-fi
 
 export P_CI_DIR="$PWD"
+
+mkdir -p /tmp/release
 
 if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   echo "Creating $DOCKER_NAME_TAG container to run in"
@@ -34,6 +31,8 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
                   --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
                   --mount type=bind,src=$CCACHE_DIR,dst=$CCACHE_DIR \
                   --mount type=bind,src=$DEPENDS_DIR,dst=$DEPENDS_DIR \
+                  --mount type=bind,src=$PREVIOUS_RELEASES_DIR,dst=$PREVIOUS_RELEASES_DIR \
+                  --mount type=bind,src=/tmp/release,dst=/release \
                   -w $BASE_ROOT_DIR \
                   --env-file /tmp/env \
                   --name $CONTAINER_NAME \
@@ -77,15 +76,6 @@ else
   DOCKER_EXEC echo "Free disk space:"
   DOCKER_EXEC df -h
 fi
-
-if [ ! -d ${DIR_QA_ASSETS} ]; then
- if [ "$RUN_FUZZ_TESTS" = "true" ]; then
-  DOCKER_EXEC git clone https://github.com/bitcoin-core/qa-assets ${DIR_QA_ASSETS}
- fi
-fi
-export DIR_FUZZ_IN=${DIR_QA_ASSETS}/fuzz_seed_corpus/
-
-DOCKER_EXEC mkdir -p "${BASE_SCRATCH_DIR}/sanitizer-output/"
 
 if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   echo "Create $BASE_ROOT_DIR"

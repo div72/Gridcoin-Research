@@ -66,8 +66,8 @@ $(BITCOIN_WIN_INSTALLER): all-recursive
 	@test -f $(MAKENSIS) && $(MAKENSIS) -V2 $(top_builddir)/share/setup.nsi || \
 	  echo error: could not build $@
 	@echo built $@
-	@rm release/gridcoinresearch.exe release/gridcoinresearchd.exe
-	@mv $@ release/$@
+	@echo rm release/gridcoinresearch.exe release/gridcoinresearchd.exe
+	@echo mv $@ release/$@
 
 $(OSX_APP)/Contents/PkgInfo:
 	$(MKDIR_P) $(@D)

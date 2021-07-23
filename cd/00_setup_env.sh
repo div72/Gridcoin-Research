@@ -9,7 +9,7 @@ export LC_ALL=C.UTF-8
 # The root dir.
 # The ci system copies this folder.
 # This is where the depends build is done.
-BASE_ROOT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )"/../../ >/dev/null 2>&1 && pwd )
+BASE_ROOT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )"/../ >/dev/null 2>&1 && pwd )
 export BASE_ROOT_DIR
 
 echo "Setting specific values in env"

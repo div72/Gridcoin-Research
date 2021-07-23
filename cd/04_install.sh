@@ -31,7 +31,6 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
                   --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
                   --mount type=bind,src=$CCACHE_DIR,dst=$CCACHE_DIR \
                   --mount type=bind,src=$DEPENDS_DIR,dst=$DEPENDS_DIR \
-                  --mount type=bind,src=$PREVIOUS_RELEASES_DIR,dst=$PREVIOUS_RELEASES_DIR \
                   --mount type=bind,src=/tmp/release,dst=/release \
                   -w $BASE_ROOT_DIR \
                   --env-file /tmp/env \

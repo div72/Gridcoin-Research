@@ -6,6 +6,7 @@
 #ifndef BITCOIN_LEVELDB_H
 #define BITCOIN_LEVELDB_H
 
+#include "clientversion.h"
 #include "main.h"
 #include "streams.h"
 

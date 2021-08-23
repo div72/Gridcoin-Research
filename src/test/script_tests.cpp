@@ -5,7 +5,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <boost/preprocessor/stringize.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include "main.h"

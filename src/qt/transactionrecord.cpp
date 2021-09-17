@@ -1,6 +1,8 @@
+#include "script.h"
 #include "transactionrecord.h"
 #include "wallet/wallet.h"
 #include "base58.h"
+
 
 /* Return positive answer if transaction should be shown in list. */
 bool TransactionRecord::showTransaction(const CWalletTx &wtx, bool datetime_limit_flag, const int64_t &datetime_limit)

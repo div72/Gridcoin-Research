@@ -3,8 +3,9 @@
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
 #include <consensus/tx_verify.h>
-
 #include <primitives/transaction.h>
+#include "script.h"
+
 
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {

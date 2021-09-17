@@ -9,6 +9,7 @@
 #include "ui_interface.h"
 #include "base58.h"
 #include "bitcoingui.h"
+#include "script.h"
 #include "util.h"
 
 #include <QInputDialog>

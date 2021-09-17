@@ -49,9 +49,6 @@ typedef std::optional<Claim> ClaimOption;
 
 static const int64_t DEFAULT_CBR = 10 * COIN;
 
-/** Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp. */
-static const unsigned int LOCKTIME_THRESHOLD = 500000000; // Tue Nov  5 00:53:20 1985 UTC
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Genesis - MainNet - Production Genesis: as of 10-20-2014:

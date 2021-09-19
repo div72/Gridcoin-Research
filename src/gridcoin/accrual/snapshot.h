@@ -408,7 +408,7 @@ private:
 //!
 fs::path SnapshotDirectory()
 {
-    return GetDataDir() / "accrual";
+    return gArgs.GetDataDirNet() / "accrual";
 }
 
 //!

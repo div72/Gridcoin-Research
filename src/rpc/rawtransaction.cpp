@@ -1412,7 +1412,7 @@ UniValue scanforunspent(const UniValue& params, bool fHelp)
             std::string backupdir = gArgs.GetArg("-backupdir", "");
 
             if (backupdir.empty())
-                exportpath = GetDataDir() / "walletbackups" / "rpc" / exportfile;
+                exportpath = gArgs.GetDataDirNet() / "walletbackups" / "rpc" / exportfile;
 
             else
                 exportpath = fs::path(backupdir) / exportfile;

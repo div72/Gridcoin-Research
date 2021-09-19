@@ -38,7 +38,7 @@
 using namespace GRC;
 namespace boostio = boost::iostreams;
 
-// These are initialized empty. GetDataDir() cannot be called here. It is too early.
+// These are initialized empty. gArgs.GetDataDirNet() cannot be called here. It is too early.
 fs::path pathDataDir = {};
 fs::path pathScraper = {};
 
@@ -1142,7 +1142,7 @@ public:
     {
         vuserpass.clear();
 
-        fs::path plistfile = GetDataDir() / "userpass.dat";
+        fs::path plistfile = gArgs.GetDataDirNet() / "userpass.dat";
 
         userpassfile.open(plistfile, std::ios_base::in);
 
@@ -1196,7 +1196,7 @@ public:
     authdata(const std::string& project)
     {
         std::string outfile = project + "_auth.dat";
-        fs::path poutfile = GetDataDir() / outfile;
+        fs::path poutfile = gArgs.GetDataDirNet() / outfile;
 
         oauthdata.open(poutfile, std::ios_base::out | std::ios_base::app);
 
@@ -1479,12 +1479,12 @@ AppCacheSectionExt GetExtendedScrapersCache()
 // It can also be called in "single shot" mode.
 void Scraper(bool bSingleShot)
 {
-    // Initialize these while still single-threaded. They cannot be initialized during declaration because GetDataDir()
+    // Initialize these while still single-threaded. They cannot be initialized during declaration because gArgs.GetDataDirNet()
     // gives the wrong value that early. If they are already initialized then leave them alone (because this function
     // can be called in singleshot mode.
     if (pathDataDir.empty())
     {
-        pathDataDir = GetDataDir();
+        pathDataDir = gArgs.GetDataDirNet();
         pathScraper = pathDataDir  / "Scraper";
     }
 
@@ -1719,11 +1719,11 @@ void ScraperSingleShot()
 // This is the thread that and processes scraper information.
 void ScraperSubscriber()
 {
-    // Initialize these while still single-threaded. They cannot be initialized during declaration because GetDataDir()
+    // Initialize these while still single-threaded. They cannot be initialized during declaration because gArgs.GetDataDirNet()
     // gives the wrong value that early. Don't initialize here if the scraper thread is running, or if already initialized.
     if (!fScraperActive && pathDataDir.empty())
     {
-        pathDataDir = GetDataDir();
+        pathDataDir = gArgs.GetDataDirNet();
         pathScraper = pathDataDir  / "Scraper";
     }
 

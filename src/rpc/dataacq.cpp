@@ -388,7 +388,7 @@ UniValue rpc_exportstats(const UniValue& params, bool fHelp)
     unsigned long points = 0;
     double samples = 0; /* this is double for easy division */
     fsbridge::ofstream Output;
-    fs::path o_path = GetDataDir() / "reports" / ( "export_" + ToString(GetTime()) + ".txt" );
+    fs::path o_path = gArgs.GetDataDirNet() / "reports" / ( "export_" + ToString(GetTime()) + ".txt" );
     fs::create_directories(o_path.parent_path());
     Output.open (o_path);
     Output.imbue(std::locale::classic());

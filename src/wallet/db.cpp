@@ -251,7 +251,7 @@ CDB::CDB(const std::string& strFilename, const char* pszMode, bool fFlushOnClose
 
     {
         LOCK(bitdb.cs_db);
-        if (!bitdb.Open(GetDataDir()))
+        if (!bitdb.Open(gArgs.GetDataDirNet()))
             throw runtime_error("env open failed");
 
         strFile = strFilename;

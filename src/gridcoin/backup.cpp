@@ -17,7 +17,7 @@ using namespace GRC;
 
 fs::path GRC::GetBackupPath()
 {
-    fs::path defaultDir = GetDataDir() / "walletbackups";
+    fs::path defaultDir = gArgs.GetDataDirNet() / "walletbackups";
     return gArgs.GetArg("-backupdir", defaultDir.string());
 }
 
@@ -149,7 +149,7 @@ bool GRC::BackupWallet(const CWallet& wallet, const std::string& strDest)
         bitdb.mapFileUseCount.erase(wallet.strWalletFile);
 
         // Copy wallet.dat
-        fs::path WalletSource = GetDataDir() / wallet.strWalletFile;
+        fs::path WalletSource = gArgs.GetDataDirNet() / wallet.strWalletFile;
         fs::path WalletTarget = strDest;
         fs::create_directories(WalletTarget.parent_path());
         if (fs::is_directory(WalletTarget))

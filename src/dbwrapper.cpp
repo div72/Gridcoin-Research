@@ -38,7 +38,7 @@ static leveldb::Options GetOptions() {
 
 void init_blockindex(leveldb::Options& options, bool fRemoveOld = false) {
     // First time init.
-    fs::path directory = GetDataDir() / "txleveldb";
+    fs::path directory = gArgs.GetDataDirNet() / "txleveldb";
 
     if (fRemoveOld) {
         fs::remove_all(directory); // remove directory
@@ -46,7 +46,7 @@ void init_blockindex(leveldb::Options& options, bool fRemoveOld = false) {
 
         while (true)
         {
-            fs::path strBlockFile = GetDataDir() / strprintf("blk%04u.dat", nFile);
+            fs::path strBlockFile = gArgs.GetDataDirNet() / strprintf("blk%04u.dat", nFile);
 
             // Break if no such file
             if( !fs::exists( strBlockFile ) )

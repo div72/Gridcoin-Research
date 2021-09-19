@@ -382,7 +382,7 @@ bool isObscured(QWidget *w)
 
 void openDebugLogfile()
 {
-    fs::path pathDebug = GetDataDir() / "debug.log";
+    fs::path pathDebug = gArgs.GetDataDirNet() / "debug.log";
 
     /* Open debug.log with the associated application */
     if (fs::exists(pathDebug))
@@ -454,8 +454,8 @@ AutoStartupArguments GetAutoStartupArguments(bool fStartMin = true)
     AutoStartupArguments result;
 
     // We do NOT want testnet appended here for the path in the autostart
-    // shortcut, so use false in GetDataDir().
-    result.data_dir = GetDataDir(false);
+    // shortcut, so use gArgs.GetDataDirBase().
+    result.data_dir = gArgs.GetDataDirBase();
 
     result.arguments = {};
 

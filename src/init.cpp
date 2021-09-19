@@ -701,7 +701,7 @@ void InitLogging()
     }
 
     LogPrintf("Default data directory %s\n", GetDefaultDataDir().string());
-    LogPrintf("Using data directory %s\n", GetDataDir().string());
+    LogPrintf("Using data directory %s\n", gArgs.GetDataDirNet().string());
 
     std::string build_type;
 #ifdef DEBUG
@@ -930,7 +930,7 @@ bool AppInit2(ThreadHandlerPtr threads)
 
     LogPrintf("Block version 11 hard fork configured for block %d", Params().GetConsensus().BlockV11Height);
 
-    fs::path datadir = GetDataDir();
+    fs::path datadir = gArgs.GetDataDirNet();
     fs::path walletFileName = gArgs.GetArg("-wallet", "wallet.dat");
 
     LogPrintf("INFO %s: DataDir = %s.", __func__, datadir.string());
@@ -1012,7 +1012,7 @@ bool AppInit2(ThreadHandlerPtr threads)
     g_timer.LogTimer("init", true);
     g_timer.GetTimes("Starting verify of database integrity", "init");
 
-    if (!bitdb.Open(GetDataDir()))
+    if (!bitdb.Open(gArgs.GetDataDirNet()))
     {
          string msg = strprintf(_("Error initializing database environment %s!"
                                  " To recover, BACKUP THAT DIRECTORY, then remove"
@@ -1028,7 +1028,7 @@ bool AppInit2(ThreadHandlerPtr threads)
             return false;
     }
 
-    if (fs::exists(GetDataDir() / walletFileName))
+    if (fs::exists(gArgs.GetDataDirNet() / walletFileName))
     {
         CDBEnv::VerifyResult r = bitdb.Verify(walletFileName.string(), CWalletDB::Recover);
         if (r == CDBEnv::RECOVER_OK)
@@ -1160,7 +1160,7 @@ bool AppInit2(ThreadHandlerPtr threads)
 
     // ********************************************************* Step 7: load blockchain
 
-    if (!bitdb.Open(GetDataDir()))
+    if (!bitdb.Open(gArgs.GetDataDirNet()))
     {
         string msg = strprintf(_("Error initializing database environment %s!"
                                  " To recover, BACKUP THAT DIRECTORY, then remove"
@@ -1344,13 +1344,13 @@ bool AppInit2(ThreadHandlerPtr threads)
         g_timer.GetTimes("load blockchain file complete", "init");
     }
 
-    fs::path pathBootstrap = GetDataDir() / "bootstrap.dat";
+    fs::path pathBootstrap = gArgs.GetDataDirNet() / "bootstrap.dat";
     if (fs::exists(pathBootstrap)) {
         uiInterface.InitMessage(_("Importing bootstrap blockchain data file."));
 
         FILE *file = fsbridge::fopen(pathBootstrap, "rb");
         if (file) {
-            fs::path pathBootstrapOld = GetDataDir() / "bootstrap.dat.old";
+            fs::path pathBootstrapOld = gArgs.GetDataDirNet() / "bootstrap.dat.old";
             LoadExternalBlockFile(file);
             if (!RenameOver(pathBootstrap, pathBootstrapOld))
             {
@@ -1366,7 +1366,7 @@ bool AppInit2(ThreadHandlerPtr threads)
     // Ban manager instance should not already be instantiated
     assert(!g_banman);
     // Create ban manager instance.
-    g_banman = std::make_unique<BanMan>(GetDataDir() / "banlist.dat", &uiInterface, gArgs.GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME));
+    g_banman = std::make_unique<BanMan>(gArgs.GetDataDirNet() / "banlist.dat", &uiInterface, gArgs.GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME));
 
     uiInterface.InitMessage(_("Loading addresses..."));
     LogPrint(BCLog::LogFlags::NOISY, "Loading addresses...");

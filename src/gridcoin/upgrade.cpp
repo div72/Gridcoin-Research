@@ -432,7 +432,7 @@ void Upgrade::VerifySHA256SUM()
     SHA256_CTX ctx;
     SHA256_Init(&ctx);
 
-    fs::path fileloc = GetDataDir() / "snapshot.zip";
+    fs::path fileloc = gArgs.GetDataDirNet() / "snapshot.zip";
     unsigned char *buffer[32768];
     int bytesread = 0;
 
@@ -487,7 +487,7 @@ void Upgrade::VerifySHA256SUM()
 
 void Upgrade::CleanupBlockchainData()
 {
-    fs::path CleanupPath = GetDataDir();
+    fs::path CleanupPath = gArgs.GetDataDirNet();
 
     // This is required because of problems with junction point handling in the boost filesystem library. Please see
     // https://github.com/boostorg/filesystem/issues/125. We are not quite ready to switch over to std::filesystem yet.
@@ -699,7 +699,7 @@ void Upgrade::ExtractSnapshot()
         zip_error_t* err = new zip_error_t;
         struct zip* ZipArchive;
 
-        std::string archive_file_string = (GetDataDir() / "snapshot.zip").string();
+        std::string archive_file_string = (gArgs.GetDataDirNet() / "snapshot.zip").string();
         const char* archive_file = archive_file_string.c_str();
 
         int ze;
@@ -716,7 +716,7 @@ void Upgrade::ExtractSnapshot()
             return;
         }
 
-        fs::path ExtractPath = GetDataDir();
+        fs::path ExtractPath = gArgs.GetDataDirNet();
         struct zip_stat ZipStat;
         int64_t lastupdated = GetAdjustedTime();
         long long totaluncompressedsize = 0;
@@ -862,7 +862,7 @@ void Upgrade::DeleteSnapshot()
     // File is out of scope now check if it exists and if so delete it.
     try
     {
-        fs::path snapshotpath = GetDataDir() / "snapshot.zip";
+        fs::path snapshotpath = gArgs.GetDataDirNet() / "snapshot.zip";
 
         if (fs::exists(snapshotpath))
             if (fs::is_regular_file(snapshotpath))
@@ -890,7 +890,7 @@ std::string Upgrade::ResetBlockchainMessages(ResetBlockchainMsg _msg)
         case CleanUp:
         {
             stream << _("Datadir: ");
-            stream << GetDataDir().string();
+            stream << gArgs.GetDataDirNet().string();
             stream << "\r\n\r\n";
             stream << _("Due to the failure to delete the blockchain data you will be required to manually delete the data "
                         "before starting your wallet.");

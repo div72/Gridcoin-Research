@@ -141,10 +141,10 @@ bool AppInit(int argc, char* argv[])
 
             // Let's check make sure Gridcoin is not already running in the data directory.
             // Use new probe feature
-            if (!LockDirectory(GetDataDir(), ".lock", false))
+            if (!LockDirectory(gArgs.GetDataDirNet(), ".lock", false))
             {
                 tfm::format(std::cerr, "Cannot obtain a lock on data directory %s.  Gridcoin is probably already running.",
-                            GetDataDir().string().c_str());
+                            gArgs.GetDataDirNet().string().c_str());
 
                 exit(1);
             }
@@ -176,9 +176,9 @@ bool AppInit(int argc, char* argv[])
             GRC::Upgrade resetblockchain;
 
             // Let's check make sure Gridcoin is not already running in the data directory.
-            if (!LockDirectory(GetDataDir(), ".lock", false))
+            if (!LockDirectory(gArgs.GetDataDirNet(), ".lock", false))
             {
-                tfm::format(std::cerr, "Cannot obtain a lock on data directory %s.  Gridcoin is probably already running.", GetDataDir().string().c_str());
+                tfm::format(std::cerr, "Cannot obtain a lock on data directory %s.  Gridcoin is probably already running.", gArgs.GetDataDirNet().string().c_str());
 
                 exit(1);
             }

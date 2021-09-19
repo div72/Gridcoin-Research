@@ -2523,7 +2523,7 @@ bool CBlock::CheckBlockSignature() const
 
 bool CheckDiskSpace(uint64_t nAdditionalBytes)
 {
-    uint64_t nFreeBytesAvailable = fs::space(GetDataDir()).available;
+    uint64_t nFreeBytesAvailable = fs::space(gArgs.GetDataDirNet()).available;
 
     // Check for nMinDiskSpace bytes (currently 50MB)
     if (nFreeBytesAvailable < nMinDiskSpace + nAdditionalBytes)
@@ -2542,7 +2542,7 @@ bool CheckDiskSpace(uint64_t nAdditionalBytes)
 static fs::path BlockFilePath(unsigned int nFile)
 {
     string strBlockFn = strprintf("blk%04u.dat", nFile);
-    return GetDataDir() / strBlockFn;
+    return gArgs.GetDataDirNet() / strBlockFn;
 }
 
 FILE* OpenBlockFile(unsigned int nFile, unsigned int nBlockPos, const char* pszMode)

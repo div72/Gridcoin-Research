@@ -226,7 +226,7 @@ UniValue dumpcontracts(const UniValue& params, bool fHelp)
     fs::path path = fs::path(params[1].get_str());
     if (path.empty()) throw runtime_error("Invalid path.");
 
-    fs::path DefaultPathDataDir = GetDataDir();
+    fs::path DefaultPathDataDir = gArgs.GetDataDirNet();
 
     // If provided filename does not have a path, then append parent path, otherwise leave alone.
     if (path.parent_path().empty())

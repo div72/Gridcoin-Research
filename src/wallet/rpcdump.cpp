@@ -182,7 +182,7 @@ UniValue importwallet(const UniValue& params, bool fHelp)
             "If a path is not specified in the filename, the data directory is used.");
 
     fs::path PathForImport = fs::path(params[0].get_str());
-    fs::path DefaultPathDataDir = GetDataDir();
+    fs::path DefaultPathDataDir = gArgs.GetDataDirNet();
 
     // If provided filename does not have a path, then append parent path, otherwise leave alone.
     if (PathForImport.parent_path().empty())
@@ -315,7 +315,7 @@ UniValue dumpwallet(const UniValue& params, bool fHelp)
     EnsureWalletIsUnlocked();
 
     fs::path PathForDump = fs::path(params[0].get_str());
-    fs::path DefaultPathDataDir = GetDataDir();
+    fs::path DefaultPathDataDir = gArgs.GetDataDirNet();
 
     // If provided filename does not have a path, then append parent path, otherwise leave alone.
     if (PathForDump.parent_path().empty())

@@ -43,7 +43,7 @@ struct TestingSetup {
         // Ban manager instance should not already be instantiated
         assert(!g_banman);
         // Create ban manager instance.
-        g_banman = std::make_unique<BanMan>(GetDataDir() / "banlist.dat", &uiInterface, gArgs.GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME));
+        g_banman = std::make_unique<BanMan>(gArgs.GetDataDirNet() / "banlist.dat", &uiInterface, gArgs.GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME));
     }
     ~TestingSetup()
     {

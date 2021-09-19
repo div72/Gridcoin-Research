@@ -55,7 +55,7 @@ fs::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
  * the datadir if they are not absolute.
  *
  * @param path The path to be conditionally prefixed with datadir.
- * @param net_specific Forwarded to GetDataDir().
+ * @param net_specific Use network specific datadir variant
  * @return The normalized path.
  */
 fs::path AbsPathForConfigVal(const fs::path& path, bool net_specific = true);
@@ -215,11 +215,18 @@ public:
     /**
      * Get data directory path
      *
-     * @param net_specific Append network identifier to the returned path
      * @return Absolute path on success, otherwise an empty path when a non-directory path would be returned
      * @post Returned directory path is created unless it is empty
      */
-    const fs::path& GetDataDirPath(bool net_specific = true) const;
+    const fs::path& GetDataDirBase() const { return GetDataDir(false); }
+
+    /**
+     * Get data directory path with appended network identifier
+     *
+     * @return Absolute path on success, otherwise an empty path when a non-directory path would be returned
+     * @post Returned directory path is created unless it is empty
+     */
+    const fs::path& GetDataDirNet() const { return GetDataDir(true); }
 
     /**
      * Clear cached directory paths
@@ -386,6 +393,15 @@ public:
     UniValue OutputArgs() const;
 
 private:
+    /**
+     * Get data directory path
+     *
+     * @param net_specific Append network identifier to the returned path
+     * @return Absolute path on success, otherwise an empty path when a non-directory path would be returned
+     * @post Returned directory path is created unless it is empty
+     */
+    const fs::path& GetDataDir(bool net_specific) const;
+
     // Helper function for LogArgs().
     void logArgsPrefix(
             const std::string& prefix,
@@ -407,8 +423,6 @@ bool updateRwSetting(const std::string& name, const util::SettingsValue& value);
 // This is to address what I think is a miss in the Bitcoin implementation, which is to efficiently update
 // more than one setting at once (avoids multiple file rewrites).
 bool updateRwSettings(const std::vector<std::pair<std::string, util::SettingsValue>>& settings_in);
-
-const fs::path &GetDataDir(bool fNetSpecific = true);
 
 bool CheckDataDirOption();
 

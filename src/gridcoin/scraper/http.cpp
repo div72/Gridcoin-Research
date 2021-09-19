@@ -309,7 +309,7 @@ void Http::DownloadSnapshot()
 {
     std::string url = gArgs.GetArg("-snapshoturl", "https://snapshot.gridcoin.us/snapshot.zip");
 
-    fs::path destination = GetDataDir() / "snapshot.zip";
+    fs::path destination = gArgs.GetDataDirNet() / "snapshot.zip";
 
     LogPrint(BCLog::LogFlags::VERBOSE, "INFO: %s: Downloading snapshot to %s.", __func__, destination.string());
 

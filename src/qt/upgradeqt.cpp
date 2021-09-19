@@ -380,7 +380,7 @@ void UpgradeQt::DeleteSnapshot()
 
     try
     {
-        fs::path snapshotpath = GetDataDir() / snapshotfile;
+        fs::path snapshotpath = gArgs.GetDataDirNet() / snapshotfile;
 
         if (fs::exists(snapshotpath))
             if (fs::is_regular_file(snapshotpath))

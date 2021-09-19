@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
     SelectParams(gArgs.IsArgSet("-testnet") ? CBaseChainParams::TESTNET : CBaseChainParams::MAIN);
 
     // Determine availability of data directory and parse gridcoinresearch.conf
-    // Do not call GetDataDir(true) before this step finishes
+    // Do not call gArgs.GetDataDirNet() before this step finishes
     if (!CheckDataDirOption()) {
         ThreadSafeMessageBox(strprintf("Specified data directory \"%s\" does not exist.\n", gArgs.GetArg("-datadir", "")),
                              "", CClientUIInterface::ICON_ERROR | CClientUIInterface::OK | CClientUIInterface::MODAL);
@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
     // This check must be done before logging is initialized or the config file is read. We do not want another
     // instance writing into an already running Gridcoin instance's logs. This is checked in init too,
     // but that is too late.
-    fs::path dataDir = GetDataDir();
+    fs::path dataDir = gArgs.GetDataDirNet();
 
     if (!LockDirectory(dataDir, ".lock", false)) {
         std::string str = strprintf(_("Cannot obtain a lock on data directory %s. %s is probably already running "

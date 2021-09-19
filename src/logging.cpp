@@ -365,7 +365,7 @@ bool BCLog::Logger::archive(bool fImmediate, fs::path pfile_out)
     boost::gregorian::date ArchiveCheckDate = boost::posix_time::from_time_t(nTime).date();
     fs::path plogfile;
     fs::path pfile_temp;
-    fs::path pathDataDir = GetDataDir();
+    fs::path pathDataDir = gArgs.GetDataDirNet();
 
     std::stringstream ssArchiveCheckDate, ssPrevArchiveCheckDate;
 

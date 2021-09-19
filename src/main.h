@@ -12,6 +12,7 @@
 #include "index/disktxpos.h"
 #include "index/txindex.h"
 #include "util.h"
+#include "util/hasher.h"
 #include "net.h"
 #include "gridcoin/block_index.h"
 #include "gridcoin/contract/contract.h"
@@ -61,11 +62,6 @@ static const uint256 hashGenesisBlockTestNet = uint256S("0x00006e037d7b84104208e
 
 inline int64_t FutureDrift(int64_t nTime, int nHeight) { return nTime + 20 * 60; }
 inline unsigned int GetTargetSpacing(int nHeight) { return IsProtocolV2(nHeight) ? 90 : 60; }
-
-struct BlockHasher
-{
-    size_t operator()(const uint256& hash) const { return hash.GetUint64(); }
-};
 
 typedef std::unordered_map<uint256, CBlockIndex*, BlockHasher> BlockMap;
 

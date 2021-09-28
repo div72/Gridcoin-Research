@@ -22,6 +22,7 @@ class OverviewPage;
 class FavoritesPage;
 class ReceiveCoinsPage;
 class SendCoinsDialog;
+class SendCoinsRecipient;
 class VotingPage;
 class SignVerifyMessageDialog;
 class Notificator;
@@ -170,6 +171,9 @@ private:
     /** Set Icons */
     void setIcons();
 
+Q_SIGNALS:
+    /** Signal raised when a URI was entered or dragged to the GUI */
+    void receivedURI(const QString &uri);
 
 public slots:
     /** Set number of connections shown in the UI */
@@ -185,6 +189,16 @@ public slots:
        @see WalletModel::EncryptionStatus
     */
     void setEncryptionStatus(int status);
+
+    /** Notify the user of an event from the core network or transaction handling code.
+       @param[in] title             the message box / notification title
+       @param[in] message           the displayed text
+       @param[in] style             modality and style definitions (icon and used buttons - buttons only for message boxes)
+                                    @see CClientUIInterface::BTN_MessageBoxFlags
+       @param[in] ret               pointer to a bool that will be modified to whether Ok was clicked (modal only)
+       @param[in] detailed_message  the text to be displayed in the details area
+    */
+    void message(const QString& title, QString message, unsigned int style, bool* ret = nullptr, const QString& detailed_message = QString());
 
     /** Notify the user if there is an update available */
     void update(const QString& title, const QString& version, const QString& message);
@@ -203,8 +217,10 @@ public slots:
 
     void askQuestion(std::string caption, std::string body, bool *result);
 
-    void handleURI(QString strURI);
     void setOptionsStyleSheet(QString qssFileName);
+
+public Q_SLOTS:
+    bool handlePaymentRequest(const SendCoinsRecipient& recipient);
 
 private slots:
     /** Switch to overview (home) page */
@@ -223,6 +239,8 @@ private slots:
     void gotoSignMessageTab(QString addr = "");
     /** Show Sign/Verify Message dialog and switch to verify message tab */
     void gotoVerifyMessageTab(QString addr = "");
+    /** Show open dialog */
+    void openClicked();
     /** Show configuration dialog */
     void optionsClicked();
     /** Switch the active light/dark theme */

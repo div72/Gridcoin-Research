@@ -10,6 +10,7 @@ namespace Ui {
     class SendCoinsDialog;
 }
 class SendCoinsEntry;
+class SendCoinsRecipient;
 
 QT_BEGIN_NAMESPACE
 class QUrl;
@@ -31,7 +32,7 @@ public:
     QWidget *setupTabChain(QWidget *prev);
 
     void pasteEntry(const SendCoinsRecipient &rv);
-    bool handleURI(const QString &uri);
+    bool handlePaymentRequest(const SendCoinsRecipient &recipient);
 
 public slots:
     void clear();

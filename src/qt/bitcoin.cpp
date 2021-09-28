@@ -19,13 +19,13 @@
 #include "guiconstants.h"
 #include "init.h"
 #include "ui_interface.h"
-#include "qtipcserver.h"
 #include "txdb.h"
 #include "util.h"
 #include "util/threadnames.h"
 #include "winshutdownmonitor.h"
 #include "gridcoin/upgrade.h"
 #include "gridcoin/gridcoin.h"
+#include "qt/paymentserver.h"
 #include "policy/fees.h"
 #include "upgradeqt.h"
 #include "validation.h"
@@ -69,6 +69,7 @@ extern bool bGridcoinCoreInitComplete;
 // Need a global reference for the notifications to find the GUI
 static BitcoinGUI *guiref;
 static QSplashScreen *splashref;
+static PaymentServer* paymentServer;
 
 static void RegisterMetaTypes()
 {
@@ -302,7 +303,7 @@ int main(int argc, char *argv[])
     if (command_line_parse_failure) {
         tfm::format(std::cerr, "Error parsing command line arguments: %s\n", error);
         ThreadSafeMessageBox(strprintf("Error reading configuration file.\n"),
-                "", CClientUIInterface::ICON_ERROR | CClientUIInterface::OK | CClientUIInterface::MODAL);
+                "", CClientUIInterface::ICON_ERROR | CClientUIInterface::BTN_OK | CClientUIInterface::MODAL);
         QMessageBox::critical(nullptr, PACKAGE_NAME, QObject::tr("Error: Cannot parse command line arguments. Please check "
                                                                  "the arguments and ensure they are valid and formatted "
                                                                  "correctly."));
@@ -383,7 +384,7 @@ int main(int argc, char *argv[])
 
     if (!gArgs.ReadConfigFiles(error_msg, true)) {
         ThreadSafeMessageBox(strprintf("Error reading configuration file.\n"),
-                "", CClientUIInterface::ICON_ERROR | CClientUIInterface::OK | CClientUIInterface::MODAL);
+                "", CClientUIInterface::ICON_ERROR | CClientUIInterface::BTN_OK | CClientUIInterface::MODAL);
         QMessageBox::critical(nullptr, PACKAGE_NAME, QObject::tr("Error: Cannot read configuration file. Please check the "
                                                                  "path and format of the file."));
         return EXIT_FAILURE;
@@ -392,11 +393,16 @@ int main(int argc, char *argv[])
     // Do this to pickup -testnet from the command line.
     SelectParams(gArgs.IsArgSet("-testnet") ? CBaseChainParams::TESTNET : CBaseChainParams::MAIN);
 
+    #ifdef ENABLE_WALLET
+        // Parse URIs on command line -- this can affect Params()
+        PaymentServer::ipcParseCommandLine(argc, argv);
+    #endif
+
     // Determine availability of data directory and parse gridcoinresearch.conf
     // Do not call GetDataDir(true) before this step finishes
     if (!CheckDataDirOption()) {
         ThreadSafeMessageBox(strprintf("Specified data directory \"%s\" does not exist.\n", gArgs.GetArg("-datadir", "")),
-                             "", CClientUIInterface::ICON_ERROR | CClientUIInterface::OK | CClientUIInterface::MODAL);
+                             "", CClientUIInterface::ICON_ERROR | CClientUIInterface::BTN_OK | CClientUIInterface::MODAL);
         QMessageBox::critical(nullptr, PACKAGE_NAME,
             QObject::tr("Error: Specified data directory \"%1\" does not exist.")
                               .arg(QString::fromStdString(gArgs.GetArg("-datadir", ""))));
@@ -412,7 +418,7 @@ int main(int argc, char *argv[])
         std::string str = strprintf(_("Cannot obtain a lock on data directory %s. %s is probably already running "
                                       "and using that directory."),
                                     dataDir, PACKAGE_NAME);
-        ThreadSafeMessageBox(str, _("Gridcoin"), CClientUIInterface::OK | CClientUIInterface::MODAL);
+        ThreadSafeMessageBox(str, _("Gridcoin"), CClientUIInterface::BTN_OK | CClientUIInterface::MODAL);
         QMessageBox::critical(nullptr, PACKAGE_NAME,
             QObject::tr("Error: Cannot obtain a lock on the specified data directory. "
                         "An instance is probably already using that directory."));
@@ -423,7 +429,7 @@ int main(int argc, char *argv[])
     // Reread config file after correct chain is selected
     if (!gArgs.ReadConfigFiles(error, true)) {
         ThreadSafeMessageBox(strprintf("Error reading configuration file: %s\n", error),
-                "", CClientUIInterface::ICON_ERROR | CClientUIInterface::OK | CClientUIInterface::MODAL);
+                "", CClientUIInterface::ICON_ERROR | CClientUIInterface::BTN_OK | CClientUIInterface::MODAL);
         QMessageBox::critical(nullptr, PACKAGE_NAME,
             QObject::tr("Error: Cannot parse configuration file: %1.").arg(QString::fromStdString(error)));
         return EXIT_FAILURE;
@@ -431,7 +437,7 @@ int main(int argc, char *argv[])
 
     if (!gArgs.InitSettings(error)) {
         ThreadSafeMessageBox(strprintf("Error initializing settings.\n"),
-                "", CClientUIInterface::ICON_ERROR | CClientUIInterface::OK | CClientUIInterface::MODAL);
+                "", CClientUIInterface::ICON_ERROR | CClientUIInterface::BTN_OK | CClientUIInterface::MODAL);
         QMessageBox::critical(nullptr, PACKAGE_NAME,
                               QObject::tr("Error initializing settings: %1").arg(QString::fromStdString(error)));
         return EXIT_FAILURE;
@@ -440,8 +446,23 @@ int main(int argc, char *argv[])
     // Initialize logging as early as possible.
     InitLogging();
 
-    // Do this early as we don't want to bother initializing if we are just calling IPC
-    ipcScanRelay(argc, argv);
+#ifdef ENABLE_WALLET
+    /// 8. URI IPC sending
+    // - Do this early as we don't want to bother initializing if we are just calling IPC
+    // - Do this *after* setting up the data directory, as the data directory hash is used in the name
+    // of the server.
+    // - Do this after creating app and setting up translations, so errors are
+    // translated properly.
+    if (PaymentServer::ipcSendCommandLine())
+        exit(EXIT_SUCCESS);
+
+    // Start up the payment server early, too, so impatient users that click on
+    // gridcoin: links repeatedly have their payment requests routed to this process:
+    // if (WalletModel::isWalletEnabled()) {
+    //    app.createPaymentServer();
+    // }
+    paymentServer = new PaymentServer(&app);
+#endif // ENABLE_WALLET
 
     // Make sure a user does not request snapshotdownload and resetblockchaindata at same time!
     if (gArgs.IsArgSet("-snapshotdownload") && gArgs.IsArgSet("-resetblockchaindata"))
@@ -488,7 +509,7 @@ int main(int argc, char *argv[])
 
             std::string inftext = resetblockchain.ResetBlockchainMessages(resetblockchain.CleanUp);
 
-            ThreadSafeMessageBox(inftext, _("Gridcoin"), CClientUIInterface::OK | CClientUIInterface::MODAL);
+            ThreadSafeMessageBox(inftext, _("Gridcoin"), CClientUIInterface::BTN_OK | CClientUIInterface::MODAL);
             QMessageBox::critical(nullptr, PACKAGE_NAME, QString::fromStdString(inftext));
 
             return EXIT_FAILURE;
@@ -649,6 +670,8 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
                 window.setWalletModel(&walletModel);
                 window.setVotingModel(&votingModel);
 
+                paymentServer->setOptionsModel(&optionsModel);
+
                 // If -min option passed, start window minimized.
                 if(gArgs.GetBoolArg("-min"))
                 {
@@ -659,8 +682,12 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
                     window.show();
                 }
 
-                // Place this here as guiref has to be defined if we don't want to lose URIs
-                ipcInit(argc, argv);
+                QObject::connect(paymentServer, &PaymentServer::receivedPaymentRequest, &window, &BitcoinGUI::handlePaymentRequest);
+                QObject::connect(&window, &BitcoinGUI::receivedURI, paymentServer, &PaymentServer::handleURIOrFile);
+                QObject::connect(paymentServer, &PaymentServer::message, [&window](const QString& title, const QString& message, unsigned int style) {
+                    window.message(title, message, style);
+                });
+                QTimer::singleShot(100, paymentServer, &PaymentServer::uiReady);
 
 #if defined(WIN32) && defined(QT_GUI)
                 WinShutdownMonitor::registerShutdownBlockReason(QObject::tr("%1 didn't yet exit safely...").arg(QObject::tr(PACKAGE_NAME)), (HWND)window.winId());

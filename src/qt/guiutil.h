@@ -20,6 +20,9 @@ class SendCoinsRecipient;
  */
 namespace GUIUtil
 {
+    // Use this flags to prevent a "What's This" button in the title bar of the dialog on Windows.
+    constexpr auto dialog_flags = Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
+
     // Create human-readable string from date
     QString dateTimeStr(const QDateTime &datetime);
     QString dateTimeStr(qint64 nTime);
@@ -96,6 +99,9 @@ namespace GUIUtil
 
     // Determine whether a widget is hidden behind other windows
     bool isObscured(QWidget *w);
+
+    // Set shortcut to close window
+    void handleCloseWindowShortcut(QWidget* w);
 
     // Open debug.log
     void openDebugLogfile();

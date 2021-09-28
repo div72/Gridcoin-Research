@@ -86,6 +86,7 @@ QT_FORMS_UI = \
   qt/forms/favoritespage.ui \
   qt/forms/intro.ui \
   qt/forms/noresult.ui \
+  qt/forms/openuridialog.ui \
   qt/forms/optionsdialog.ui \
   qt/forms/overviewpage.ui \
   qt/forms/receivecoinspage.ui \
@@ -150,6 +151,7 @@ QT_MOC_CPP = \
   qt/moc_monitoreddatamapper.cpp \
   qt/moc_noresult.cpp \
   qt/moc_notificator.cpp \
+  qt/moc_openuridialog.cpp \
   qt/moc_optionsdialog.cpp \
   qt/moc_optionsmodel.cpp \
   qt/moc_overviewpage.cpp \
@@ -250,11 +252,11 @@ GRIDCOINRESEARCH_QT_H = \
   qt/monitoreddatamapper.h \
   qt/noresult.h \
   qt/notificator.h \
+  qt/openuridialog.h \
   qt/optionsdialog.h \
   qt/optionsmodel.h \
   qt/overviewpage.h \
   qt/peertablemodel.h \
-  qt/qtipcserver.h \
   qt/qvalidatedlineedit.h \
   qt/qvaluecombobox.h \
   qt/receivecoinspage.h \
@@ -333,11 +335,11 @@ GRIDCOINRESEARCH_QT_CPP = \
   qt/monitoreddatamapper.cpp \
   qt/noresult.cpp \
   qt/notificator.cpp \
+  qt/openuridialog.cpp \
   qt/optionsdialog.cpp \
   qt/optionsmodel.cpp \
   qt/overviewpage.cpp \
   qt/peertablemodel.cpp \
-  qt/qtipcserver.cpp \
   qt/qvalidatedlineedit.cpp \
   qt/qvaluecombobox.cpp \
   qt/receivecoinspage.cpp \

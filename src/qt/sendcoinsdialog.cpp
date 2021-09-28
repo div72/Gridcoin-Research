@@ -346,20 +346,12 @@ void SendCoinsDialog::pasteEntry(const SendCoinsRecipient &rv)
     entry->setValue(rv);
 }
 
-bool SendCoinsDialog::handleURI(const QString &uri)
+bool SendCoinsDialog::handlePaymentRequest(const SendCoinsRecipient &rv)
 {
-    SendCoinsRecipient rv;
-    // URI has to be valid
-    if (GUIUtil::parseBitcoinURI(uri, &rv))
-    {
-        CBitcoinAddress address(rv.address.toStdString());
-        if (!address.IsValid())
-            return false;
-        pasteEntry(rv);
-        return true;
-    }
-
-    return false;
+    // Just paste the entry, all pre-checks
+    // are done in paymentserver.cpp.
+    pasteEntry(rv);
+    return true;
 }
 
 void SendCoinsDialog::setBalance(qint64 balance, qint64 stake, qint64 unconfirmedBalance, qint64 immatureBalance)

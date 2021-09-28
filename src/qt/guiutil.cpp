@@ -6,6 +6,7 @@
 #include "init.h"
 #include <codecvt>
 
+#include <QShortcut>
 #include <QString>
 #include <QDateTime>
 #include <QDoubleValidator>
@@ -249,7 +250,7 @@ bool parseBitcoinURI(QString uri, SendCoinsRecipient *out)
 {
     // Convert gridcoin:// to gridcoin:
     //
-    //    Cannot handle this later, because bitcoin:// will cause Qt to see the part after // as host,
+    //    Cannot handle this later, because gridcoin:// will cause Qt to see the part after // as host,
     //    which will lower-case it (and thus invalidate the address).
 
     if(uri.startsWith("gridcoin://"))
@@ -378,6 +379,11 @@ bool isObscured(QWidget *w)
         && checkPoint(QPoint(0, w->height() - 1), w)
         && checkPoint(QPoint(w->width() - 1, w->height() - 1), w)
         && checkPoint(QPoint(w->width() / 2, w->height() / 2), w));
+}
+
+void handleCloseWindowShortcut(QWidget* w)
+{
+    QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), w), &QShortcut::activated, w, &QWidget::close);
 }
 
 void openDebugLogfile()

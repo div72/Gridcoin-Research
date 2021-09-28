@@ -29,6 +29,7 @@
 #include "transactiondescdialog.h"
 #include "addresstablemodel.h"
 #include "transactionview.h"
+#include "openuridialog.h"
 #include "overviewpage.h"
 #include "bitcoinunits.h"
 #include "guiconstants.h"
@@ -43,6 +44,7 @@
 #include "univalue.h"
 #include "upgradeqt.h"
 #include "voting/votingmodel.h"
+#include "qt/walletmodel.h"
 
 #ifdef Q_OS_MAC
 #include "macdockiconhandler.h"
@@ -1071,6 +1073,66 @@ void BitcoinGUI::setMinerStatus(
 #endif
 }
 
+void BitcoinGUI::message(const QString& title, QString message, unsigned int style, bool* ret, const QString& detailed_message)
+{
+    // Default title. On macOS, the window title is ignored (as required by the macOS Guidelines).
+    QString strTitle{PACKAGE_NAME};
+    // Default to information icon
+    int nMBoxIcon = QMessageBox::Information;
+    int nNotifyIcon = Notificator::Information;
+
+    QString msgType;
+    if (!title.isEmpty()) {
+        msgType = title;
+    } else {
+        switch (style) {
+        case CClientUIInterface::MSG_ERROR:
+            msgType = tr("Error");
+            message = tr("Error: %1").arg(message);
+            break;
+        case CClientUIInterface::MSG_WARNING:
+            msgType = tr("Warning");
+            message = tr("Warning: %1").arg(message);
+            break;
+        case CClientUIInterface::MSG_INFORMATION:
+            msgType = tr("Information");
+            // No need to prepend the prefix here.
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (!msgType.isEmpty()) {
+        strTitle += " - " + msgType;
+    }
+
+    if (style & CClientUIInterface::ICON_ERROR) {
+        nMBoxIcon = QMessageBox::Critical;
+        nNotifyIcon = Notificator::Critical;
+    } else if (style & CClientUIInterface::ICON_WARNING) {
+        nMBoxIcon = QMessageBox::Warning;
+        nNotifyIcon = Notificator::Warning;
+    }
+
+    if (style & CClientUIInterface::MODAL) {
+        // Check for buttons, use OK as default, if none was supplied
+        QMessageBox::StandardButton buttons;
+        if (!(buttons = (QMessageBox::StandardButton)(style & CClientUIInterface::BTN_MASK)))
+            buttons = QMessageBox::Ok;
+
+        showNormalIfMinimized();
+        QMessageBox mBox(static_cast<QMessageBox::Icon>(nMBoxIcon), strTitle, message, buttons, this);
+        mBox.setTextFormat(Qt::PlainText);
+        mBox.setDetailedText(detailed_message);
+        int r = mBox.exec();
+        if (ret != nullptr)
+            *ret = r == QMessageBox::Ok;
+    } else {
+        notificator->notify(static_cast<Notificator::Class>(nNotifyIcon), strTitle, message);
+    }
+}
+
 void BitcoinGUI::error(const QString &title, const QString &message, bool modal)
 {
     // Report errors from network/worker thread
@@ -1341,6 +1403,15 @@ void BitcoinGUI::peersClicked()
         rpcConsole->showPeersTab();
 }
 
+void BitcoinGUI::openClicked()
+{
+    OpenURIDialog dlg(this);
+    if(dlg.exec())
+    {
+        Q_EMIT receivedURI(dlg.getURI());
+    }
+}
+
 void BitcoinGUI::gotoOverviewPage()
 {
     overviewAction->setChecked(true);
@@ -1427,33 +1498,25 @@ void BitcoinGUI::dropEvent(QDropEvent *event)
 {
     if(event->mimeData()->hasUrls())
     {
-        int nValidUrisFound = 0;
-        QList<QUrl> uris = event->mimeData()->urls();
-        for (const QUrl& uri : uris) {
-            if (sendCoinsPage->handleURI(uri.toString()))
-                nValidUrisFound++;
+        for (const QUrl &uri : event->mimeData()->urls())
+        {
+            Q_EMIT receivedURI(uri.toString());
         }
-
-        // if valid URIs were found
-        if (nValidUrisFound)
-            gotoSendCoinsPage();
-        else
-            notificator->notify(Notificator::Warning, tr("URI handling"), tr("URI can not be parsed! This can be caused by an invalid Gridcoin address or malformed URI parameters."));
     }
-
     event->acceptProposedAction();
 }
 
-void BitcoinGUI::handleURI(QString strURI)
+bool BitcoinGUI::handlePaymentRequest(const SendCoinsRecipient& recipient)
 {
     // URI has to be valid
-    if (sendCoinsPage->handleURI(strURI))
+    // if (walletFrame && walletFrame->handlePaymentRequest(recipient))
+    if (sendCoinsPage && sendCoinsPage->handlePaymentRequest(recipient))
     {
         showNormalIfMinimized();
         gotoSendCoinsPage();
+        return true;
     }
-    else
-        notificator->notify(Notificator::Warning, tr("URI handling"), tr("URI can not be parsed! This can be caused by an invalid Gridcoin address or malformed URI parameters."));
+    return false;
 }
 
 void BitcoinGUI::setEncryptionStatus(int status)

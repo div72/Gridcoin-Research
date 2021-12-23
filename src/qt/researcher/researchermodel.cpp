@@ -306,7 +306,15 @@ QString ResearcherModel::email() const
 
 QString ResearcherModel::formatCpid() const
 {
-    return QString::fromStdString(m_researcher->Id().ToString());
+    QString text;
+
+    if (m_privacy_enabled) {
+        text = "################################";
+    } else {
+        text = QString::fromStdString(m_researcher->Id().ToString());
+    }
+
+    return text;
 }
 
 QString ResearcherModel::formatMagnitude() const

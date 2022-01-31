@@ -26,6 +26,8 @@ struct Setup {
     CKey key;
 
     Setup() {
+        cs_main.lock();
+
         SelectParams(CBaseChainParams::MAIN);
 
         // Setup a mock chain.
@@ -99,6 +101,8 @@ struct Setup {
 
         mapBlockIndex.erase(pindexGenesisBlock->GetBlockHash());
         delete pindexGenesisBlock->phashBlock;
+
+        cs_main.unlock();
     }
 };
 } // Anonymous namespace

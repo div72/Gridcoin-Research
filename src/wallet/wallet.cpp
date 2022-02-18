@@ -21,6 +21,7 @@
 #include "main.h"
 #include "util.h"
 #include <util/string.h>
+#include "gridcoin/mrc.h"
 #include "gridcoin/staking/kernel.h"
 #include "gridcoin/support/block_finder.h"
 #include "policy/fees.h"
@@ -1180,9 +1181,22 @@ void CWallet::ResendWalletTransactions(bool fForce)
         LOCK(cs_wallet);
         // Sort them in chronological order
         multimap<unsigned int, CWalletTx*> mapSorted;
+        std::vector<CWalletTx> to_be_erased;
         for (auto &item : mapWallet)
         {
             CWalletTx& wtx = item.second;
+
+            AssertLockHeld(cs_main);
+
+            if (wtx.vContracts[0].m_type == GRC::ContractType::MRC) {
+                GRC::MRC mrc = *(wtx.vContracts[0].SharePayloadAs<GRC::MRC>());
+
+                // Remove MRC transaction if it went stale.
+                if (mrc.m_last_block_hash != hashBestChain) {
+                    to_be_erased.push_back(wtx);
+                }
+            }
+
             // Don't rebroadcast until it's had plenty of time that
             // it should have gotten in already by now.
             if (fForce || g_nTimeBestReceived - (int64_t)wtx.nTimeReceived > 5 * 60)
@@ -1194,8 +1208,15 @@ void CWallet::ResendWalletTransactions(bool fForce)
             if (CheckTransaction(wtx)) {
                 wtx.RelayWalletTransaction(txdb);
             } else {
-                LogPrintf("ResendWalletTransactions() : CheckTransaction failed for transaction %s", wtx.GetHash().ToString());
+                to_be_erased.push_back(wtx);
             }
+        }
+
+        for (const auto& wtx : to_be_erased) {
+            LogPrintf("%s: Erasing stale transaction %s.", __func__, wtx.GetHash().ToString());
+            EraseFromWallet(wtx.GetHash());
+            mempool.remove((CTransaction)wtx);
+            NotifyTransactionChanged(this, wtx.GetHash(), CT_DELETED);
         }
     }
 }

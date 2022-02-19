@@ -24,6 +24,7 @@
 #include "gridcoin/mrc.h"
 #include "gridcoin/staking/kernel.h"
 #include "gridcoin/support/block_finder.h"
+#include "gridcoin/claim.h"
 #include "policy/fees.h"
 #include "node/blockstorage.h"
 
@@ -1191,9 +1192,29 @@ void CWallet::ResendWalletTransactions(bool fForce)
             if (!wtx.vContracts.empty() && wtx.vContracts[0].m_type == GRC::ContractType::MRC) {
                 GRC::MRC mrc = *(wtx.vContracts[0].SharePayloadAs<GRC::MRC>());
 
-                // Remove MRC transaction if it went stale.
-                if (mrc.m_last_block_hash != hashBestChain) {
+                BlockMap::iterator mi = mapBlockIndex.find(mrc.m_last_block_hash);
+
+                // The MRC transaction m_last_block_hash is not in the chain. Erase it
+                if (mi == mapBlockIndex.end()) {
                     to_be_erased.push_back(wtx);
+                }
+
+                // For historical MRC requests, make sure that they made it in the chain AND they were paid out.
+                if (mi->second != pindexBest) {
+                    CBlockIndex* mrc_index = mi->second->pnext;
+
+                    bool in_claim = false;
+
+                    if (GRC::ClaimOption claim = GetClaimByIndex(mrc_index)) {
+                        for (const auto& mrc : claim->m_mrc_tx_map) {
+                            if (mrc.second == wtx.GetHash()) {
+                                in_claim = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!in_claim) to_be_erased.push_back(wtx);
                 }
             }
 
@@ -1202,6 +1223,7 @@ void CWallet::ResendWalletTransactions(bool fForce)
             if (fForce || g_nTimeBestReceived - (int64_t)wtx.nTimeReceived > 5 * 60)
                 mapSorted.insert(make_pair(wtx.nTimeReceived, &wtx));
         }
+
         for (auto const &item : mapSorted)
         {
             CWalletTx& wtx = *item.second;

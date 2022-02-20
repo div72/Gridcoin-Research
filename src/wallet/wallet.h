@@ -106,6 +106,11 @@ public:
     bool fFileBacked;
     std::string strWalletFile;
 
+    /** The next scheduled rebroadcast of wallet transactions. */
+    int64_t nNextResend GUARDED_BY(cs_wallet) = 0;
+    /** The previous rebroadcast of wallet transactions. */
+    int64_t m_prev_resend GUARDED_BY(cs_wallet){0};
+
     std::set<int64_t> setKeyPool GUARDED_BY(cs_wallet);
     std::map<CKeyID, CKeyMetadata> mapKeyMetadata GUARDED_BY(cs_wallet);
 

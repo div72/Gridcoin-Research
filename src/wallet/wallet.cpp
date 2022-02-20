@@ -21,7 +21,6 @@
 #include "main.h"
 #include "util.h"
 #include <util/string.h>
-#include "gridcoin/mrc.h"
 #include "gridcoin/staking/kernel.h"
 #include "gridcoin/support/block_finder.h"
 #include "policy/fees.h"
@@ -1156,29 +1155,28 @@ void CWalletTx::RelayWalletTransaction()
 
 void CWallet::ResendWalletTransactions(bool fForce)
 {
+    LOCK(cs_wallet);
+
     if (!fForce)
     {
         // Do this infrequently and randomly to avoid giving away
         // that these are our transactions.
-        static int64_t nNextTime;
-        if ( GetAdjustedTime() < nNextTime)
+        if (GetAdjustedTime() < nNextResend)
             return;
-        bool fFirst = (nNextTime == 0);
-        nNextTime =  GetAdjustedTime() + GetRand(30 * 60);
+        bool fFirst = (nNextResend == 0);
+        nNextResend = GetAdjustedTime() + GetRand(30 * 60);
         if (fFirst)
             return;
 
         // Only do it if there's been a new block since last time
-        static int64_t nLastTime;
-        if (g_nTimeBestReceived < nLastTime)
+        if (m_prev_resend && g_nTimeBestReceived < m_prev_resend)
             return;
-        nLastTime =  GetAdjustedTime();
+        m_prev_resend = GetAdjustedTime();
     }
 
     // Rebroadcast any of our txes that aren't in a block yet
     CTxDB txdb("r");
     {
-        LOCK(cs_wallet);
         // Sort them in chronological order
         multimap<unsigned int, CWalletTx*> mapSorted;
         for (auto &item : mapWallet)
@@ -1193,13 +1191,6 @@ void CWallet::ResendWalletTransactions(bool fForce)
         {
             CWalletTx& wtx = *item.second;
             if (CheckTransaction(wtx)) {
-                AssertLockHeld(cs_main);
-
-                if (!wtx.vContracts.empty() && wtx.vContracts[0].m_type == GRC::ContractType::MRC) {
-                    GRC::MRC mrc = *(wtx.vContracts[0].SharePayloadAs<GRC::MRC>());
-
-                    if (mrc.m_last_block_hash != hashBestChain) continue;
-                }
                 wtx.RelayWalletTransaction(txdb);
             } else {
                 LogPrintf("ResendWalletTransactions() : CheckTransaction failed for transaction %s", wtx.GetHash().ToString());

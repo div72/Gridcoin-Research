@@ -1099,35 +1099,6 @@ void CWallet::ReacceptWalletTransactions()
 
 void CWalletTx::RelayWalletTransaction(CTxDB& txdb)
 {
-    // Nodes erase version 1 transactions from the mempool at the
-    // block version 11 threshold to prepare for version 2. If we
-    // still have unconfirmed version 1 transactions removed from
-    // the pool when the transition occurred, we can't switch the
-    // format to version 2 because we need to re-sign these which
-    // may change the properties of the transaction in a way that
-    // requires the consent of the user. Log a message instead so
-    // that the user can take action if needed:
-    //
-    if (nVersion == 1)
-    {
-        if (IsCoinBase() || IsCoinStake())
-        {
-            return;
-        }
-
-        const uint256 hash = GetHash();
-
-        if (!txdb.ContainsTx(hash))
-        {
-            LogPrintf(
-                "WARNING: %s: unable to resend legacy version 1 tx %s",
-                __func__,
-                hash.ToString());
-        }
-
-        return;
-    }
-
     for (auto const& tx : vtxPrev)
     {
         if (!(tx.IsCoinBase() || tx.IsCoinStake()))
@@ -1233,6 +1204,21 @@ void CWallet::ResendWalletTransactions(bool fForce)
         {
             CWalletTx& wtx = *item.second;
             if (CheckTransaction(wtx)) {
+                // At this point we should not be relaying any version 1 transactions, since we are WAY
+                // past the block v11 transition, which was also the transition from tx version 1 to 2.
+                // Further any version 1 transactions in the wallet that have not been sent MUST be invalid
+                // and should be deleted from both the wallet and the mempool.
+                if (wtx.nVersion == 1
+                        && !(wtx.IsCoinBase() || wtx.IsCoinStake())
+                        && !txdb.ContainsTx(wtx.GetHash())) {
+                    LogPrintf("WARNING: %s: Erasing unsent version 1 tx %s from wallet and mempool",
+                              __func__,
+                              wtx.GetHash().ToString()
+                              );
+
+                    to_be_erased.push_back(wtx);
+                }
+
                 wtx.RelayWalletTransaction(txdb);
             } else {
                 to_be_erased.push_back(wtx);

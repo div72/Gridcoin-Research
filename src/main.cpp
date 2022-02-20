@@ -16,6 +16,7 @@
 #include "node/ui_interface.h"
 #include "gridcoin/beacon.h"
 #include "gridcoin/claim.h"
+#include "gridcoin/gridcoin.h"
 #include "gridcoin/mrc.h"
 #include "gridcoin/contract/contract.h"
 #include "gridcoin/project.h"
@@ -1759,6 +1760,7 @@ bool GridcoinConnectBlock(
 
     GRC::Tally::RecordRewardBlock(pindex);
     GRC::Researcher::Refresh();
+    GRC::CleanupStaleTransactions(pindex, pwalletMain, mempool, txdb);
 
     return true;
 }

@@ -8,6 +8,7 @@
 #include "gridcoin/backup.h"
 #include "gridcoin/contract/contract.h"
 #include "gridcoin/gridcoin.h"
+#include "gridcoin/mrc.h"
 #include "gridcoin/quorum.h"
 #include "gridcoin/researcher.h"
 #include "gridcoin/support/block_finder.h"
@@ -552,3 +553,82 @@ skip:;
     return true;
 }
 
+void GRC::CleanupStaleTransactions(const CBlockIndex* const pindex, CWallet* pwallet,
+                                   CTxMemPool& mempool, CTxDB& txdb) {
+    AssertLockHeld(cs_main);
+
+    // We really need to be in sync before running this function,
+    // as MRC is block sensitive.
+    if (OutOfSyncByAge() || nBestHeight < GetNumBlocksOfPeers())
+        return;
+
+    LOCK(pwallet->cs_wallet);
+
+    std::vector<CTransaction> stale_txs;
+
+    // Rules for local wallet transaction eviction:
+    // - Must satisfy lock time requrements.
+    // - Must have been broadcast once.
+    // - 5 minutes must have passed since the broadcast.
+    // - Must be older than 30 minutes.
+    // Additionally stale MRC transactions are immediately
+    // evicted.
+    for (const auto& [hash, wtx] : pwallet->mapWallet) {
+        if (txdb.ContainsTx(hash))
+            continue;
+
+        for (const auto& contract : wtx.GetContracts()) {
+            if (contract.m_type == GRC::ContractType::MRC) {
+                // We don't need to check the hash here,
+                // as any transaction from us which existed
+                // before the latest block must be stale.
+                stale_txs.push_back((CTransaction)wtx);
+            }
+        }
+
+        if (!IsFinalTx(wtx, pindex->nHeight, pindex->GetBlockTime()))
+            continue;
+
+        if (!pwallet->m_prev_resend)
+            continue;
+
+        if (pindex->GetBlockTime() - pwallet->m_prev_resend < 5 * 60)
+            continue;
+
+        if (pindex->GetBlockTime() - (int64_t)wtx.nTimeReceived < 30 * 60)
+            continue;
+
+        stale_txs.push_back((CTransaction)wtx);
+    }
+
+    // Normally, holding cs_wallet even when mempool
+    // is being iterated is suboptimal. Here it's not
+    // a big problem since cs_main is already held
+    // and mempool loop will take much less time than
+    // iterating over the wallet.
+    LOCK(mempool.cs);
+
+    // Rules for mempool transaction eviction:
+    // - Must not be a stale MRC transaction.
+    for (const auto& [hash, tx] : mempool.mapTx) {
+        for (const auto& contract : tx.GetContracts()) {
+            if (contract.m_type == GRC::ContractType::MRC) {
+                GRC::MRC mrc = *(contract.SharePayloadAs<GRC::MRC>());
+
+                // We need to check the block hash here, as we might
+                // have received a fresh MRC before receiving the latest block.
+                if (mrc.m_last_block_hash != pindex->GetBlockHash()) {
+                    stale_txs.push_back(tx);
+                }
+            }
+        }
+    }
+
+    for (const auto& tx : stale_txs) {
+        LogPrintf("%s: cleaning up stale transaction %s.", __func__, tx.GetHash().ToString());
+        mempool.remove(tx);
+        if (pwallet->EraseFromWallet(tx.GetHash())) {
+            pwallet->NotifyTransactionChanged(pwallet, tx.GetHash(), CT_DELETED);
+        }
+    }
+}

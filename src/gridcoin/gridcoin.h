@@ -40,6 +40,14 @@ void ScheduleBackgroundJobs(CScheduler& scheduler);
 //! \return \c true if no errors occurred.
 //!
 bool CleanConfig();
+
+//!
+//! \brief Cleans up stale transactions from the wallet and the mempool. A transaction
+//! is stale if it failed to get in to a block for a period of time or it contains
+//! a stale MRC.
+//!
+void CleanupStaleTransactions(const CBlockIndex* const pindex, CWallet* pwallet,
+                              CTxMemPool& mempool, CTxDB& txdb);
 } // namespace GRC
 
 #endif // GRIDCOIN_GRIDCOIN_H

@@ -21,6 +21,7 @@
 #include "main.h"
 #include "util.h"
 #include <util/string.h>
+#include "gridcoin/mrc.h"
 #include "gridcoin/staking/kernel.h"
 #include "gridcoin/support/block_finder.h"
 #include "policy/fees.h"
@@ -1192,6 +1193,13 @@ void CWallet::ResendWalletTransactions(bool fForce)
         {
             CWalletTx& wtx = *item.second;
             if (CheckTransaction(wtx)) {
+                AssertLockHeld(cs_main);
+
+                if (wtx.vContracts[0].m_type == GRC::ContractType::MRC) {
+                    GRC::MRC mrc = *(wtx.vContracts[0].SharePayloadAs<GRC::MRC>());
+
+                    if (mrc.m_last_block_hash != hashBestChain) continue;
+                }
                 wtx.RelayWalletTransaction(txdb);
             } else {
                 LogPrintf("ResendWalletTransactions() : CheckTransaction failed for transaction %s", wtx.GetHash().ToString());
@@ -1815,8 +1823,6 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
                 wtxNew.fFromMe = true;
 
                 int64_t nTotalValue = nValueOut + nFeeRet;
-                // dPriority is not currently used. Commented out.
-                //double dPriority = 0;
 
                 // vouts to the payees
                 for (auto const& s : vecSend)
@@ -1867,23 +1873,13 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
                                   FormatMoney(setcoins_total));
                     }
 
-                    // Compute dPriority on automatically selected coins.
-                    /*
-                    for (auto const& input : setCoins_out)
-                    {
-                        int64_t nCredit = input.first->vout[input.second].nValue;
-                        dPriority += (double) nCredit * input.first->GetDepthInMainChain();
-                    }
-                    */
                 }
                 else
                 {
-                    // Add up input value for the provided set of coins, and also compute dPriority. (dPriority is
-                    // commented out because it is not actually used right now.
+                    // Add up input value for the provided set of coins.
                     for (auto const& input : setCoins_in)
                     {
                         int64_t nCredit = input.first->vout[input.second].nValue;
-                        //dPriority += (double) nCredit * input.first->GetDepthInMainChain();
                         nValueIn += nCredit;
                     }
                 }
@@ -2028,9 +2024,6 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
                 if (nBytes >= MAX_STANDARD_TX_SIZE) {
                     return error("%s: tx size %d greater than standard %d", __func__, nBytes, MAX_STANDARD_TX_SIZE);
                 }
-
-                // dPriority is not currently used.
-                //dPriority /= nBytes;
 
                 // Check that enough fee is included
                 int64_t nPayFee = nTransactionFee * (1 + (int64_t)nBytes / 1000);

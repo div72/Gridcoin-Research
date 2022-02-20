@@ -47,19 +47,18 @@ class COrphan
 public:
     CTransaction* ptx;
     set<uint256> setDependsOn;
-    double dPriority;
     double dFeePerKb;
 
     COrphan(CTransaction* ptxIn)
     {
         ptx = ptxIn;
-        dPriority = dFeePerKb = 0;
+        dFeePerKb = 0;
     }
 
     void print() const
     {
-        LogPrintf("COrphan(hash=%s, dPriority=%.1f, dFeePerKb=%.1f)",
-               ptx->GetHash().ToString().substr(0,10), dPriority, dFeePerKb);
+        LogPrintf("COrphan(hash=%s, dFeePerKb=%.1f)",
+               ptx->GetHash().ToString().substr(0,10), dFeePerKb);
         for (auto const& hash : setDependsOn)
             LogPrintf("   setDependsOn %s", hash.ToString().substr(0,10));
     }
@@ -305,30 +304,6 @@ bool CreateMRCRewards(CBlock &blocknew, std::map<GRC::Cpid, std::pair<uint256, G
 // up being most...
 //} // anonymous namespace
 
-// We want to sort transactions by priority and fee, so:
-typedef std::tuple<double, double, CTransaction*> TxPriority;
-class TxPriorityCompare
-{
-    bool byFee;
-public:
-    TxPriorityCompare(bool _byFee) : byFee(_byFee) { }
-    bool operator()(const TxPriority& a, const TxPriority& b)
-    {
-        if (byFee)
-        {
-            if (std::get<1>(a) == std::get<1>(b))
-                return std::get<0>(a) < std::get<0>(b);
-            return std::get<1>(a) < std::get<1>(b);
-        }
-        else
-        {
-            if (std::get<0>(a) == std::get<0>(b))
-                return std::get<1>(a) < std::get<1>(b);
-            return std::get<0>(a) < std::get<0>(b);
-        }
-    }
-};
-
 // CreateRestOfTheBlock: collect transactions into block and fill in header
 bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
                           std::map<GRC::Cpid, std::pair<uint256, GRC::MRC>>& mrc_map)
@@ -365,20 +340,10 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
     // Limit to between 1K and MAX_BLOCK_SIZE-1K for sanity:
     nBlockMaxSize = std::clamp<unsigned int>(nBlockMaxSize, 1000, MAX_BLOCK_SIZE - 1000);
 
-    // How much of the block should be dedicated to high-priority transactions,
-    // included regardless of the fees they pay
-    unsigned int nBlockPrioritySize = gArgs.GetArg("-blockprioritysize", 27000);
-    nBlockPrioritySize = std::min(nBlockMaxSize, nBlockPrioritySize);
-
-    // Minimum block size you want to create; block will be filled with free transactions
-    // until there are no more or the block reaches this size:
-    unsigned int nBlockMinSize = gArgs.GetArg("-blockminsize", 0);
-    nBlockMinSize = std::min(nBlockMaxSize, nBlockMinSize);
-
     // Fee-per-kilobyte amount considered the same as "free"
     // Be careful setting this: if you set it to zero then
     // a transaction spammer can cheaply fill blocks using
-    // 1-satoshi-fee transactions. It should be set above the real
+    // 0-satoshi-fee transactions. It should be set above the real
     // cost to you of processing a transaction.
     int64_t nMinTxFee = GetBaseFee(CoinBase);
     if (gArgs.IsArgSet("-mintxfee"))
@@ -395,12 +360,13 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
         map<uint256, vector<COrphan*> > mapDependers;
 
         // This vector will be sorted into a priority queue:
-        vector<TxPriority> vecPriority;
+        std::vector<std::pair<double, CTransaction*>> vecPriority;
         vecPriority.reserve(mempool.mapTx.size());
 
-        for (map<uint256, CTransaction>::iterator mi = mempool.mapTx.begin(); mi != mempool.mapTx.end(); ++mi)
+        Fraction foundation_fee_fraction = FoundationSideStakeAllocation();
+
+        for (auto& [_, tx] : mempool.mapTx)
         {
-            CTransaction& tx = mi->second;
             if (tx.IsCoinBase() || tx.IsCoinStake() || !IsFinalTx(tx, nHeight))
                 continue;
 
@@ -418,7 +384,6 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
             }
 
             COrphan* porphan = nullptr;
-            double dPriority = 0;
             int64_t nTotalIn = 0;
             bool fMissingInputs = false;
 
@@ -461,29 +426,30 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
                 }
                 int64_t nValueIn = txPrev.vout[txin.prevout.n].nValue;
                 nTotalIn += nValueIn;
-
-                int nConf = GetDepthInMainChain(txindex);
-                dPriority += (double)nValueIn * nConf;
             }
             if (fMissingInputs) continue;
 
-            // Priority is sum(valuein * age) / txsize
             unsigned int nTxSize = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
-            dPriority /= nTxSize;
 
             // This is a more accurate fee-per-kilobyte than is used by the client code, because the
             // client code rounds up the size to the nearest 1K. That's good, because it gives an
             // incentive to create smaller transactions.
-            double dFeePerKb =  double(nTotalIn-tx.GetValueOut()) / (double(nTxSize)/1000.0);
+            CAmount total_fee = nTotalIn - tx.GetValueOut();
+            if (tx.vContracts[0].m_type == GRC::ContractType::MRC) {
+                const auto& mrc = *tx.vContracts[0].SharePayloadAs<GRC::MRC>();
+
+                total_fee += mrc.m_fee - mrc.m_fee * foundation_fee_fraction.GetNumerator()
+                                                   / foundation_fee_fraction.GetDenominator();
+            }
+            double dFeePerKb =  (double)total_fee / (double(nTxSize)/1000.0);
 
             if (porphan)
             {
-                porphan->dPriority = dPriority;
                 porphan->dFeePerKb = dFeePerKb;
             }
             else
             {
-                vecPriority.push_back(TxPriority(dPriority, dFeePerKb, &mi->second));
+                vecPriority.push_back(std::make_pair(dFeePerKb, &tx));
             }
         }
 
@@ -504,19 +470,16 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
 
         uint64_t nBlockTx = 0;
         int nBlockSigOps = 100;
-        bool fSortedByFee = (nBlockPrioritySize <= 0);
 
-        TxPriorityCompare comparer(fSortedByFee);
-        std::make_heap(vecPriority.begin(), vecPriority.end(), comparer);
+        std::make_heap(vecPriority.begin(), vecPriority.end());
 
         while (!vecPriority.empty())
         {
             // Take highest priority transaction off the priority queue:
-            double dPriority = std::get<0>(vecPriority.front());
-            double dFeePerKb = std::get<1>(vecPriority.front());
-            CTransaction& tx = *(std::get<2>(vecPriority.front()));
+            double dFeePerKb = vecPriority.front().first;
+            CTransaction& tx = *(vecPriority.front().second);
 
-            std::pop_heap(vecPriority.begin(), vecPriority.end(), comparer);
+            std::pop_heap(vecPriority.begin(), vecPriority.end());
             vecPriority.pop_back();
 
             // Size limits
@@ -545,20 +508,6 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
             // Transaction fee
             CAmount nMinFee = GetMinFee(tx, nBlockSize, GMF_BLOCK);
 
-            // Skip free transactions if we're past the minimum block size:
-            if (fSortedByFee && (dFeePerKb < nMinTxFee) && (nBlockSize + nTxSize >= nBlockMinSize))
-                continue;
-
-            // Prioritize by fee once past the priority size or we run out of high-priority
-            // transactions:
-            if (!fSortedByFee &&
-                ((nBlockSize + nTxSize >= nBlockPrioritySize) || (dPriority < COIN * 144 / 250)))
-            {
-                fSortedByFee = true;
-                comparer = TxPriorityCompare(fSortedByFee);
-                std::make_heap(vecPriority.begin(), vecPriority.end(), comparer);
-            }
-
             // Connecting shouldn't fail due to dependency on other memory pool transactions
             // because we're already processing them in order of dependency
             map<uint256, CTxIndex> mapTestPoolTmp(mapTestPool);
@@ -576,7 +525,10 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
                 LogPrint(BCLog::LogFlags::NOISY,
                          "Not including tx %s  due to TxFees of %" PRId64 ", bare min fee is %" PRId64,
                          tx.GetHash().GetHex(), nTxFees, nMinFee);
-                continue;
+
+                // Since transactions are sorted by fee, the fee of rest must also be lower
+                // than required.
+                break;
             }
 
             nTxSigOps += GetP2SHSigOpCount(tx, mapInputs);
@@ -632,6 +584,10 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
                                 };
                             }
                         } //TryCpid()
+                    } else {
+                        // The output limit is reached, skip MRC transactions as their
+                        // fee rate is not correct anymore.
+                        goto end;
                     } // output limit
                 } // contract type is MRC
             } // contracts in tx
@@ -647,23 +603,23 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
 
             if (LogInstance().WillLogCategory(BCLog::LogFlags::NOISY) || gArgs.GetBoolArg("-printpriority"))
             {
-                LogPrintf("priority %.1f feeperkb %.1f txid %s",
-                       dPriority, dFeePerKb, tx.GetHash().ToString());
+                LogPrintf("feerate %.1f GRC/KB txid %s",
+                       dFeePerKb, tx.GetHash().ToString());
             }
 
             // Add transactions that depend on this one to the priority queue
             uint256 hash = tx.GetHash();
             if (mapDependers.count(hash))
             {
-                for (auto const& porphan : mapDependers[hash])
+                for (auto& porphan : mapDependers[hash])
                 {
                     if (!porphan->setDependsOn.empty())
                     {
                         porphan->setDependsOn.erase(hash);
                         if (porphan->setDependsOn.empty())
                         {
-                            vecPriority.push_back(TxPriority(porphan->dPriority, porphan->dFeePerKb, porphan->ptx));
-                            std::push_heap(vecPriority.begin(), vecPriority.end(), comparer);
+                            vecPriority.push_back(std::make_pair(porphan->dFeePerKb, porphan->ptx));
+                            std::push_heap(vecPriority.begin(), vecPriority.end());
                         }
                     }
                 }
@@ -672,6 +628,7 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
 
         if (LogInstance().WillLogCategory(BCLog::LogFlags::NOISY) || gArgs.GetBoolArg("-printpriority"))
             LogPrintf("CreateNewBlock(): total size %" PRIu64, nBlockSize);
+end:;
     }
 
     //Add fees to coinbase

@@ -1157,6 +1157,8 @@ void CWalletTx::RelayWalletTransaction()
 
 void CWallet::ResendWalletTransactions(bool fForce)
 {
+    g_timer.InitTimer(__func__, LogInstance().WillLogCategory(BCLog::LogFlags::MISC));
+
     if (!fForce)
     {
         // Do this infrequently and randomly to avoid giving away
@@ -1183,6 +1185,7 @@ void CWallet::ResendWalletTransactions(bool fForce)
         // Sort them in chronological order
         multimap<unsigned int, CWalletTx*> mapSorted;
         std::vector<CWalletTx> to_be_erased;
+
         for (auto &item : mapWallet)
         {
             CWalletTx& wtx = item.second;
@@ -1224,6 +1227,8 @@ void CWallet::ResendWalletTransactions(bool fForce)
                 mapSorted.insert(make_pair(wtx.nTimeReceived, &wtx));
         }
 
+        g_timer.GetTimes("stale mrc check and mark for erasure", __func__);
+
         for (auto const &item : mapSorted)
         {
             CWalletTx& wtx = *item.second;
@@ -1234,12 +1239,16 @@ void CWallet::ResendWalletTransactions(bool fForce)
             }
         }
 
+        g_timer.GetTimes("relay transactions", __func__);
+
         for (const auto& wtx : to_be_erased) {
             LogPrintf("%s: Erasing stale transaction %s.", __func__, wtx.GetHash().ToString());
             EraseFromWallet(wtx.GetHash());
             mempool.remove((CTransaction)wtx);
             NotifyTransactionChanged(this, wtx.GetHash(), CT_DELETED);
         }
+
+        g_timer.GetTimes("erase invalid/stale transactions from wallet and mempool", __func__);
     }
 }
 

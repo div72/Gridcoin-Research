@@ -95,7 +95,7 @@ public:
     }
 
     uint256 GetHash() const {
-        return Hash(vchPubKey.begin(), vchPubKey.end());
+        return Hash(vchPubKey);
     }
 
     bool IsValid() const {

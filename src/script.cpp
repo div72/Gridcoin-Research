@@ -6,6 +6,7 @@
 using namespace std;
 
 #include "script.h"
+#include <crypto/sha1.h>
 #include "keystore.h"
 #include "bignum.h"
 #include "key.h"
@@ -979,7 +980,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, co
                     }
                     else if (opcode == OP_HASH256)
                     {
-                        uint256 hash = Hash(vch.begin(), vch.end());
+                        uint256 hash = Hash(vch);
                         memcpy(vchHash.data(), &hash, sizeof(hash));
                     }
                     popstack(stack);
@@ -1207,7 +1208,7 @@ uint256 SignatureHash(CScript scriptCode, const CTransaction& txTo, unsigned int
     CDataStream ss(SER_GETHASH, 0);
     ss.reserve(10000);
     ss << txTmp << nHashType;
-    return Hash(ss.begin(), ss.end());
+    return Hash(ss);
 }
 
 

@@ -158,7 +158,7 @@ public:
         // Immediately post zero payment interval fees 40% for testnet, the same as mainnet
         consensus.InitialMRCFeeFractionPostZeroInterval = Fraction(2, 5);
         // Zero day interval is 10 minutes on testnet. The very short interval facilitates testing.
-        consensus.MRCZeroPaymentInterval = 10 * 60;
+        consensus.MRCZeroPaymentInterval = 5 * 60;
         // Equivalent to ~arith_uint256() >> 16 or 1f00ffff in compact notation.
         consensus.powLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 

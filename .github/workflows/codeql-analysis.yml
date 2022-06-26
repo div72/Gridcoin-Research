@@ -51,8 +51,14 @@ jobs:
         
         # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
+    - name: Install dependencies
+      run: |
+        sudo add-apt-repository ppa:bitcoin/bitcoin
+        sudo apt-get update
+        apt-get install libqt5gui5 libqt5core5a qtbase5-dev libqt5dbus5 qttools5-dev qttools5-dev-tools libssl-dev libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-iostreams-dev libboost-test-dev libboost-thread-dev libdb4.8++-dev libminiupnpc-dev libqrencode-dev libzip-dev zlib1g zlib1g-dev libcurl4 libcurl4-openssl-dev
 
-        
+
+
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
     - name: Autobuild

@@ -14,6 +14,10 @@ define $(package)_set_vars
   $(package)_cflags_arm_linux = $(GCCFLAGS)
 endef
 
+define $(package)_preprocess_cmds
+  cp -f $(BASEDIR)/config.guess $(BASEDIR)/config.sub .
+endef
+
 define $(package)_config_cmds
   $($(package)_autoconf)
 endef

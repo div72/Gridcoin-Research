@@ -147,12 +147,33 @@ $(APP_DIST_DIR)/$(OSX_APP)/Contents/MacOS/gridcoinresearch: $(OSX_APP_BUILT) $(O
 deploydir: $(APP_DIST_EXTRAS)
 endif
 
+host_arch := $(firstword $(subst -, ,$(host)))
+
+Gridcoin-$(host_arch).AppImage: $(BITCOIN_QT_BIN) runtime-$(host_arch)
+	$(MKDIR_P) AppImageDir
+	cp $(BITCOIN_QT_BIN) AppImageDir/AppRun
+	for file in $$(ldd AppImageDir/AppRun | grep '=>' | cut -d ' ' -f 3); do \
+		$(MKDIR_P) AppImageDir$$(dirname $$file); \
+		cp $$file AppImageDir$$file; \
+		patchelf --add-rpath ./$$(dirname $$file) AppImageDir/AppRun; \
+	done
+	mksquashfs AppImageDir AppImage.squashfs -root-owned -noappend
+	rm -r AppImageDir
+	cat runtime-$(host_arch) AppImage.squashfs > Gridcoin-$(host_arch).AppImage
+	rm AppImage.squashfs
+	chmod a+x Gridcoin-$(host_arch).AppImage
+
 if TARGET_DARWIN
 appbundle: $(OSX_APP_BUILT)
 deploy: $(OSX_DMG)
 endif
 if TARGET_WINDOWS
 deploy: $(BITCOIN_WIN_INSTALLER)
+endif
+if !TARGET_DARWIN
+if !TARGET_WINDOWS
+deploy: Gridcoin-$(host_arch).AppImage
+endif
 endif
 
 $(BITCOIN_QT_BIN): FORCE

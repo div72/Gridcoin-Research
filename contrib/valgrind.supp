@@ -41,3 +41,9 @@
    ...
    fun:_ZN7leveldbL14InitDefaultEnvEv
 }
+{
+   Suppress https://bugs.kde.org/show_bug.cgi?id=472219 - fixed in Valgrind 3.22.
+   Memcheck:Param
+   ppoll(ufds.events)
+   obj:/lib/ld-musl-aarch64.so.1
+}

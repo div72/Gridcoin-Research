@@ -206,6 +206,7 @@ GRIDCOIN_CORE_H = \
     util/overflow.h \
     util/reverse_iterator.h \
     util/settings.h \
+	util/sock.h \
     util/strencodings.h \
     util/string.h \
     util/syserror.h \
@@ -317,6 +318,7 @@ GRIDCOIN_CORE_CPP = addrdb.cpp \
     uint256.cpp \
     util/bip32.cpp \
     util/settings.cpp \
+	util/sock.cpp \
     util/strencodings.cpp \
     util/string.cpp \
     util/syserror.cpp \

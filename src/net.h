@@ -10,15 +10,13 @@
 #include <boost/thread.hpp>
 #include <atomic>
 
+#include <compat/compat.h>
 #include "netbase.h"
 #include "mruset.h"
 #include "protocol.h"
 #include "streams.h"
 #include "addrman.h"
-
-#ifndef WIN32
-#include <arpa/inet.h>
-#endif
+#include <util/sock.h>
 
 class CNode;
 class CBlockIndex;
@@ -186,9 +184,19 @@ public:
 class CNode
 {
 public:
-    // socket
+    /**
+     * Socket used for communication with the node.
+     * May not own a Sock object (after `CloseSocketDisconnect()` or during tests).
+     * `shared_ptr` (instead of `unique_ptr`) is used to avoid premature close of
+     * the underlying file descriptor by one thread while another thread is
+     * poll(2)-ing it for activity.
+     * @see https://github.com/bitcoin/bitcoin/issues/21744 for details.
+     */
+    std::shared_ptr<Sock> m_sock GUARDED_BY(m_sock_mutex);
+
+    CCriticalSection m_sock_mutex;
+
     uint64_t nServices;
-    SOCKET hSocket;
     CDataStream ssSend;
     size_t nSendSize; // total size of all vSendMsg entries
     size_t nSendOffset; // offset inside the first vSendMsg already sent
@@ -270,11 +278,10 @@ public:
     // Whether a ping is requested.
     bool fPingQueued;
 
-    CNode(SOCKET hSocketIn, CAddress addrIn, std::string addrNameIn = "", bool fInboundIn=false) : ssSend(SER_NETWORK, INIT_PROTO_VERSION), setAddrKnown(5000)
+    CNode(std::shared_ptr<Sock> sock, CAddress addrIn, std::string addrNameIn = "", bool fInboundIn=false) : m_sock{sock}, ssSend(SER_NETWORK, INIT_PROTO_VERSION), setAddrKnown(5000)
     {
 
         nServices = 0;
-        hSocket = hSocketIn;
         nRecvVersion = INIT_PROTO_VERSION;
         nLastSend = 0;
         nLastRecv = 0;
@@ -310,17 +317,8 @@ public:
         fPingQueued = false;
 
         // Be shy and don't send version until we hear
-        if (hSocket != INVALID_SOCKET && !fInbound)
+        if (m_sock && !fInbound)
             PushVersion();
-    }
-
-    ~CNode()
-    {
-        if (hSocket != INVALID_SOCKET)
-        {
-            closesocket(hSocket);
-            hSocket = INVALID_SOCKET;
-        }
     }
 
 private:
@@ -530,7 +528,7 @@ public:
     }
 
     void PushGetBlocks(CBlockIndex* pindexBegin, uint256 hashEnd);
-    void CloseSocketDisconnect();
+    void CloseSocketDisconnect() EXCLUSIVE_LOCKS_REQUIRED(!m_sock_mutex);
 
     static bool DisconnectNode(const std::string& strNode);
     static bool DisconnectNode(const CSubNet& subnet);

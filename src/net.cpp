@@ -426,17 +426,10 @@ NodeId CNode::GetNewNodeId()
 void CNode::CloseSocketDisconnect()
 {
     fDisconnect = true;
-//    LOCK(cs_hSocket);
-    if (hSocket != INVALID_SOCKET)
-    {
-        LogPrint(BCLog::LogFlags::NET, "disconnecting node %s", addrName);
-        closesocket(hSocket);
-        hSocket = INVALID_SOCKET;
-
-        // in case this fails, we'll empty the recv buffer when the CNode is deleted
-        TRY_LOCK(cs_vRecvMsg, lockRecv);
-        if (lockRecv)
-            vRecvMsg.clear();
+    LOCK(m_sock_mutex);
+    if (m_sock) {
+        LogPrint(BCLog::NET, "disconnecting peer=%d", id);
+        m_sock.reset();
     }
 }
 
@@ -2074,6 +2067,13 @@ bool StopNode()
         for (int i=0; i<MAX_OUTBOUND_CONNECTIONS; i++)
             semOutbound->post();
 
+    std::vector<CNode*> nodes;
+    WITH_LOCK(cs_vNodes, nodes.swap(vNodes));
+    for (CNode* pnode : nodes) {
+        pnode->CloseSocketDisconnect();
+        DeleteNode(pnode);
+    }
+
     netThreads->interruptAll();
     netThreads->removeAll();
     UninterruptibleSleep(std::chrono::milliseconds{50});
@@ -2084,12 +2084,10 @@ bool StopNode()
 class CNetCleanup
 {
 public:
-    CNetCleanup()
-    {
-    }
+    CNetCleanup() = default;
+
     ~CNetCleanup()
     {
-        // Close sockets
         for (auto const& pnode : vNodes)
             if (pnode->hSocket != INVALID_SOCKET)
                 closesocket(pnode->hSocket);

@@ -11,7 +11,7 @@
 #define BITCOIN_UTIL_SYSTEM_H
 
 #include "attributes.h"
-#include <compat.h>
+#include <compat/compat.h>
 #include "compat/assumptions.h"
 #include <fs.h>
 #include <logging.h>

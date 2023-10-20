@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "compat.h"
+#include "compat/compat.h"
 #include "netaddress.h"
 #include "serialize.h"
 

@@ -56,22 +56,13 @@ jobs:
         steps:
         - name: checkout
           uses: actions/checkout@v3
-        - name: current time for cache
-          run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
-        - name: cache
-          uses: actions/cache@v3
+        - name: install nix
+          uses: cachix/install-nix-action@v22
           with:
-            path: |
-                ./ci/scratch/.ccache
-            key: ${{ runner.os }}-${{ env.TIMESTAMP }}
-            restore-keys: |
-                ${{ runner.os }}-
-        - name: install-packages
+            nix_path: nixpkgs=channel:nixos-22.05
+        - name: build & test
           run: |
-            brew install autoconf automake boost miniupnpc qrencode ccache leveldb librsvg libtool libzip openssl@1.1 pkg-config python qt@5 xquartz
-        - name: test
-          run: |
-            ./ci/test_run_all.sh
+            nix-build contrib
     lint:
         name: Lint
         runs-on: ubuntu-22.04

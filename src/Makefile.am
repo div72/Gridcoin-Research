@@ -173,6 +173,7 @@ GRIDCOIN_CORE_H = \
     policy/fees.h \
     policy/policy.h \
     prevector.h \
+    primitives/block.h \
     primitives/transaction.h \
     protocol.h \
     pubkey.h \
@@ -292,6 +293,7 @@ GRIDCOIN_CORE_CPP = addrdb.cpp \
     noui.cpp \
     pbkdf2.cpp \
     policy/policy.cpp \
+    primitives/block.cpp \
     primitives/transaction.cpp \
     protocol.cpp \
     pubkey.cpp \

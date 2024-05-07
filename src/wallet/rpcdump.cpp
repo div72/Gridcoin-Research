@@ -211,7 +211,7 @@ UniValue importwallet(const UniValue& params, bool fHelp)
         CKeyID keyid = key.GetPubKey().GetID();
 
         if (pwalletMain->HaveKey(keyid)) {
-            LogPrintf("Skipping import of %s (key already present)", CBitcoinAddress(keyid).ToString());
+            LogPrintf("Skipping import of %s (key already present)", EncodeDestination(keyid));
             continue;
         }
         int64_t nTime = DecodeDumpTime(vstr[1]);
@@ -232,7 +232,7 @@ UniValue importwallet(const UniValue& params, bool fHelp)
                 fLabel = true;
             }
         }
-        LogPrintf("Importing %s...", CBitcoinAddress(keyid).ToString());
+        LogPrintf("Importing %s...", EncodeDestination(keyid));
         if (!pwalletMain->AddKey(key)) {
             fGood = false;
             continue;
@@ -380,7 +380,7 @@ UniValue dumpwallet(const UniValue& params, bool fHelp)
     for (std::vector<std::pair<int64_t, CKeyID> >::const_iterator it = vKeyBirth.begin(); it != vKeyBirth.end(); it++) {
         const CKeyID &keyid = it->second;
         std::string strTime = EncodeDumpTime(it->first);
-        std::string strAddr = CBitcoinAddress(keyid).ToString();
+        std::string strAddr = EncodeDestination(keyid);
 
         CKey key;
         if (pwalletMain->GetKey(keyid, key)) {

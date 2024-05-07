@@ -228,7 +228,7 @@ UniValue getnewaddress(const UniValue& params, bool fHelp)
 
     pwalletMain->SetAddressBookName(keyID, strAccount);
 
-    return CBitcoinAddress(keyID).ToString();
+    return EncodeDestination(keyID);
 }
 
 
@@ -435,11 +435,11 @@ UniValue listaddressgroupings(const UniValue& params, bool fHelp)
         for (auto const& address : grouping)
         {
             UniValue addressInfo(UniValue::VARR);
-            addressInfo.push_back(CBitcoinAddress(address).ToString());
+            addressInfo.push_back(EncodeDestination(address));
             addressInfo.push_back(ValueFromAmount(balances[address]));
             {
-                if (pwalletMain->mapAddressBook.find(CBitcoinAddress(address).Get()) != pwalletMain->mapAddressBook.end())
-                    addressInfo.push_back(pwalletMain->mapAddressBook.find(CBitcoinAddress(address).Get())->second);
+                if (pwalletMain->mapAddressBook.find(DecodeDestination(address)) != pwalletMain->mapAddressBook.end())
+                    addressInfo.push_back(pwalletMain->mapAddressBook.find(DecodeDestination(address))->second);
             }
             jsonGrouping.push_back(addressInfo);
         }
@@ -1174,7 +1174,7 @@ UniValue addmultisigaddress(const UniValue& params, bool fHelp)
         throw runtime_error("AddCScript() failed");
 
     pwalletMain->SetAddressBookName(innerID, strAccount);
-    return CBitcoinAddress(innerID).ToString();
+    return EncodeDestination(innerID);
 }
 
 UniValue addredeemscript(const UniValue& params, bool fHelp)
@@ -1202,7 +1202,7 @@ UniValue addredeemscript(const UniValue& params, bool fHelp)
         throw runtime_error("AddCScript() failed");
 
     pwalletMain->SetAddressBookName(innerID, strAccount);
-    return CBitcoinAddress(innerID).ToString();
+    return EncodeDestination(innerID);
 }
 
 struct tallyitem
@@ -2438,7 +2438,7 @@ public:
         obj.pushKV("hex", HexStr(subscript));
         UniValue a(UniValue::VARR);
         for (auto const& addr : addresses)
-            a.push_back(CBitcoinAddress(addr).ToString());
+            a.push_back(EncodeDestination(addr));
         obj.pushKV("addresses", a);
         if (whichType == TX_MULTISIG)
             obj.pushKV("sigsrequired", nRequired);

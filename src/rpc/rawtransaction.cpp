@@ -121,7 +121,7 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, UniValue& out, bool fInclud
 
     UniValue a(UniValue::VARR);
     for (auto const& addr : addresses)
-        a.push_back(CBitcoinAddress(addr).ToString());
+        a.push_back(EncodeDestination(addr));
     out.pushKV("addresses", a);
 }
 
@@ -502,7 +502,7 @@ UniValue listunspent(const UniValue& params, bool fHelp)
         CTxDestination address;
         if (ExtractDestination(out.tx->vout[out.i].scriptPubKey, address))
         {
-            entry.pushKV("address", CBitcoinAddress(address).ToString());
+            entry.pushKV("address", EncodeDestination(address));
 
             auto item = pwalletMain->mapAddressBook.find(address);
 

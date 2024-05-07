@@ -64,7 +64,7 @@ CKeyID ScraperEntry::Key() const
 
 std::pair<std::string, std::string> ScraperEntry::KeyValueToString() const
 {
-    return std::make_pair(CBitcoinAddress(m_key).ToString(), StatusToString());
+    return std::make_pair(EncodeDestination(m_key), StatusToString());
 }
 
 CKeyID ScraperEntry::GetId() const
@@ -125,7 +125,7 @@ AppCacheEntryExt ScraperEntry::GetLegacyScraperEntry()
 {
     AppCacheEntryExt entry;
 
-    entry.value = CBitcoinAddress(m_key).ToString();
+    entry.value = EncodeDestination(m_key);
     entry.timestamp = m_timestamp;
     entry.deleted = (m_status == ScraperEntryStatus::DELETED);
 

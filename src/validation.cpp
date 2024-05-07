@@ -904,7 +904,7 @@ private:
                                       "actual_output = %" PRId64 ", required_output = %" PRId64,
                                           __func__,
                                           i,
-                                          CBitcoinAddress(output_destination).ToString(),
+                                          EncodeDestination(output_destination),
                                           actual_output,
                                           required_output);
                             }

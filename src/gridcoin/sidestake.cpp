@@ -338,7 +338,7 @@ CTxDestination MandatorySideStake::Key() const
 
 std::pair<std::string, std::string> MandatorySideStake::KeyValueToString() const
 {
-    return std::make_pair(CBitcoinAddress(m_destination).ToString(), StatusToString());
+    return std::make_pair(EncodeDestination(m_destination), StatusToString());
 }
 
 std::string MandatorySideStake::StatusToString() const
@@ -813,7 +813,7 @@ void SideStakeRegistry::Revert(const ContractContext& ctx)
         if (m_mandatory_sidestake_entries.erase(payload->m_entry.m_destination) == 0) {
             error("%s: The SideStake entry to erase during a SideStake entry revert for key %s was not found.",
                   __func__,
-                  CBitcoinAddress(key).ToString());
+                  EncodeDestination(key));
             // If the record to revert is not found in the m_sidestake_entries map, no point in continuing.
             return;
         }
@@ -822,7 +822,7 @@ void SideStakeRegistry::Revert(const ContractContext& ctx)
         if (!m_sidestake_db.erase(ctx.m_tx.GetHash())) {
             error("%s: The db entry to erase during a SideStake entry revert for key %s was not found.",
                   __func__,
-                  CBitcoinAddress(key).ToString());
+                  EncodeDestination(key));
 
             // Unlike the above we will keep going even if this record is not found, because it is identical to the
             // m_sidestake_entries record above. This should not happen, because during contract adds and removes,
@@ -838,7 +838,7 @@ void SideStakeRegistry::Revert(const ContractContext& ctx)
         if (resurrect_entry == m_sidestake_db.end()) {
             error("%s: The prior entry to resurrect during a SideStake entry ADD revert for key %s was not found.",
                   __func__,
-                  CBitcoinAddress(key).ToString());
+                  EncodeDestination(key));
             return;
         }
 

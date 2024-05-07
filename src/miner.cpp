@@ -1489,7 +1489,7 @@ void StakeMiner(CWallet *pwallet)
                           __func__,
                           i,
                           FormatMoney(StakeBlock.vtx[1].vout[i].nValue),
-                          CBitcoinAddress(destination).ToString());
+                          EncodeDestination(destination));
             }
         }
 

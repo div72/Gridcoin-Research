@@ -213,7 +213,7 @@ UniValue getlaststake(const UniValue& params, bool fHelp)
     CTxDestination dest;
 
     if (ExtractDestination(stake_tx->vout[1].scriptPubKey, dest)) {
-        json.pushKV("address", CBitcoinAddress(dest).ToString());
+        json.pushKV("address", EncodeDestination(dest));
     } else {
         json.pushKV("address", "");
     }

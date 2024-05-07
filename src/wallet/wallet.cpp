@@ -2155,7 +2155,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
                                 }
 
                                 LogPrintf("INFO: %s: Sending change to input address %s", __func__,
-                                          CBitcoinAddress(change_address).ToString());
+                                          EncodeDestination(change_address));
                             }
                         } else { // send change to newly generated address
                             //  Note: We use a new key here to keep it from being obvious which side is the change.
@@ -2469,7 +2469,7 @@ bool CWallet::SetAddressBookName(const CTxDestination& address, const string& st
                              (fUpdated ? CT_UPDATED : CT_NEW) );
     if (!fFileBacked)
         return false;
-    return CWalletDB(strWalletFile).WriteName(CBitcoinAddress(address).ToString(), strName);
+    return CWalletDB(strWalletFile).WriteName(EncodeDestination(address), strName);
 }
 
 bool CWallet::DelAddressBookName(const CTxDestination& address)
@@ -2484,7 +2484,7 @@ bool CWallet::DelAddressBookName(const CTxDestination& address)
 
     if (!fFileBacked)
         return false;
-    return CWalletDB(strWalletFile).EraseName(CBitcoinAddress(address).ToString());
+    return CWalletDB(strWalletFile).EraseName(EncodeDestination(address));
 }
 
 

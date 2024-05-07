@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-class CBitcoinAddress;
+class CTxDestination;
 class CTransaction;
 class CWallet;
 
@@ -218,7 +218,7 @@ public:
     //!
     //! \return Address produced from the beacon's public key.
     //!
-    CBitcoinAddress GetAddress() const;
+    CTxDestination GetAddress() const;
 
     //!
     //! \brief Get the code that the scrapers use to verify the beacon.

@@ -7,7 +7,7 @@
 #include "wallet/wallet.h"
 #include "txdb.h"
 #include "node/ui_interface.h"
-#include "base58.h"
+#include <key_io.h>
 #include "bitcoingui.h"
 #include "util.h"
 

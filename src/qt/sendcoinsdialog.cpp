@@ -349,7 +349,7 @@ bool SendCoinsDialog::handleURI(const QString &uri)
     // URI has to be valid
     if (GUIUtil::parseBitcoinURI(uri, &rv))
     {
-        CBitcoinAddress address(rv.address.toStdString());
+        CTxDestination address(rv.address.toStdString());
         if (!address.IsValid())
             return false;
         pasteEntry(rv);
@@ -509,7 +509,7 @@ void SendCoinsDialog::coinControlChangeChecked(int state)
     if (model)
     {
         if (state == Qt::Checked)
-            coinControl->destChange = CBitcoinAddress(ui->coinControlChangeEdit->text().toStdString()).Get();
+            coinControl->destChange = CTxDestination(ui->coinControlChangeEdit->text().toStdString()).Get();
         else
             coinControl->destChange = CNoDestination();
     }
@@ -525,13 +525,13 @@ void SendCoinsDialog::coinControlChangeEdited(const QString & text)
 {
     if (model)
     {
-        coinControl->destChange = CBitcoinAddress(text.toStdString()).Get();
+        coinControl->destChange = CTxDestination(text.toStdString()).Get();
 
         // label for the change address
         ui->coinControlChangeAddressLabel->setStyleSheet(QString());
         if (text.isEmpty())
             ui->coinControlChangeAddressLabel->setText(QString());
-        else if (!CBitcoinAddress(text.toStdString()).IsValid())
+        else if (!CTxDestination(text.toStdString()).IsValid())
         {
             ui->coinControlChangeAddressLabel->setStyleSheet("QLabel{color:red;}");
             ui->coinControlChangeAddressLabel->setText(tr("WARNING: Invalid Gridcoin address"));
@@ -545,7 +545,7 @@ void SendCoinsDialog::coinControlChangeEdited(const QString & text)
             {
                 CPubKey pubkey;
                 CKeyID keyid;
-                CBitcoinAddress(text.toStdString()).GetKeyID(keyid);
+                CTxDestination(text.toStdString()).GetKeyID(keyid);
                 if (model->getPubKey(keyid, pubkey))
                     ui->coinControlChangeAddressLabel->setText(tr("(no label)"));
                 else

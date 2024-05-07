@@ -235,7 +235,7 @@ LocalSideStake::LocalSideStake(CTxDestination destination,
 
 bool LocalSideStake::WellFormed() const
 {
-    return CBitcoinAddress(m_destination).IsValid() && m_allocation >= 0 && m_allocation <= 1;
+    return IsValidDestination(m_destination) && m_allocation >= 0 && m_allocation <= 1;
 }
 
 std::string LocalSideStake::StatusToString() const
@@ -328,7 +328,7 @@ MandatorySideStake::MandatorySideStake(CTxDestination destination,
 
 bool MandatorySideStake::WellFormed() const
 {
-    return CBitcoinAddress(m_destination).IsValid() && m_allocation >= 0 && m_allocation <= 1;
+    return IsValidDestination(m_destination) && m_allocation >= 0 && m_allocation <= 1;
 }
 
 CTxDestination MandatorySideStake::Key() const
@@ -1021,7 +1021,7 @@ void SideStakeRegistry::LoadLocalSideStakesFromConfig()
         std::string sAllocation = std::get<1>(entry);
         std::string sDescription = std::get<2>(entry);
 
-        CBitcoinAddress address(sAddress);
+        CTxDestination address(sAddress);
         if (!address.IsValid())
         {
             LogPrintf("WARN: %s: ignoring sidestake invalid address %s.", __func__, sAddress);

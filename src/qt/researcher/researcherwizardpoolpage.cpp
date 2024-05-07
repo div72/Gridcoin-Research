@@ -2,7 +2,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
-#include "base58.h"
+#include <key_io.h>
 #include "key.h"
 #include "qt/decoration.h"
 #include "qt/forms/ui_researcherwizardpoolpage.h"

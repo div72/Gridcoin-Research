@@ -5,7 +5,7 @@
 
 #include "key.h"
 #include <key_io.h>
-#include "base58.h"
+#include <key_io.h>
 #include "uint256.h"
 #include "util.h"
 
@@ -16,10 +16,10 @@ static const std::string strSecret1 ("7NUfsJVtS5TruQrAFpni4yqqvoQg2fNk5JHRh1vsJP
 static const std::string strSecret2 ("7PiDb7gCaHw7P7Jfayc3d6BioSj8NyzxDzNb94vYe7gGYq2ytYF");
 static const std::string strSecret1C("V7o8Z2EW1ghZGLFyrRvkGZtaxTqVGLNy7yHVyd6m1m45gzwsUEci");
 static const std::string strSecret2C("VDEvZaU25wjqAapyJxqgaHtKVzYwa2ankLEHgcKLepUKd4F7czq6");
-static const CBitcoinAddress addr1 ("SMDEt5x56GHokFwbpaYLNykBo1JwA3tC4E");
-static const CBitcoinAddress addr2 ("SC3N7xZ7NnoshVxFhAM6eFWq4YCSGMKkzn");
-static const CBitcoinAddress addr1C("SKkhuYMjyZueN4wGpY6pMMW5soPiEDhXe8");
-static const CBitcoinAddress addr2C("S9P852TD2PFqh9otrRYUL7rTheRddigULh");
+static const CTxDestination addr1 ("SMDEt5x56GHokFwbpaYLNykBo1JwA3tC4E");
+static const CTxDestination addr2 ("SC3N7xZ7NnoshVxFhAM6eFWq4YCSGMKkzn");
+static const CTxDestination addr1C("SKkhuYMjyZueN4wGpY6pMMW5soPiEDhXe8");
+static const CTxDestination addr2C("S9P852TD2PFqh9otrRYUL7rTheRddigULh");
 
 static const string strAddressBad("1HV9Lc3sNHZxwj4Zk6fB38tEmBryq2cBiF");
 

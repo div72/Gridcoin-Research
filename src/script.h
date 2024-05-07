@@ -106,7 +106,7 @@ public:
  *  * CNoDestination: no destination set
  *  * CKeyID: TX_PUBKEYHASH destination
  *  * CScriptID: TX_SCRIPTHASH destination
- *  A CTxDestination is the internal data type encoded in a CBitcoinAddress
+ *  A CTxDestination is the internal data type encoded in a CTxDestination
  */
 typedef std::variant<CNoDestination, CKeyID, CScriptID> CTxDestination;
 

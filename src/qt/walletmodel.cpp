@@ -6,7 +6,7 @@
 
 #include "node/ui_interface.h"
 #include "wallet/wallet.h"
-#include "base58.h"
+#include <key_io.h>
 #include "util.h"
 #include "gridcoin/tx_message.h"
 
@@ -174,7 +174,7 @@ void WalletModel::updateAddressBook(const QString &address, const QString &label
 
 bool WalletModel::validateAddress(const QString &address)
 {
-    CBitcoinAddress addressParsed(address.toStdString());
+    CTxDestination addressParsed(address.toStdString());
     return addressParsed.IsValid();
 }
 
@@ -242,7 +242,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
         std::vector<std::pair<CScript, int64_t> > vecSend;
         for (const SendCoinsRecipient& rcp : recipients) {
             CScript scriptPubKey;
-            scriptPubKey.SetDestination(CBitcoinAddress(rcp.address.toStdString()).Get());
+            scriptPubKey.SetDestination(CTxDestination(rcp.address.toStdString()).Get());
             vecSend.push_back(std::make_pair(scriptPubKey, rcp.amount));
         }
 

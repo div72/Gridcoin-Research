@@ -1156,7 +1156,7 @@ UniValue rainbymagnitude(const UniValue& params, bool fHelp)
     const int64_t now = GetAdjustedTime(); // Time to calculate beacon expiration from
 
     //------- CPID -------------- beacon address -- Mag --- payment - suppressed
-    std::map<GRC::Cpid, std::tuple<CBitcoinAddress, double, CAmount, bool>> mCPIDRain;
+    std::map<GRC::Cpid, std::tuple<CTxDestination, double, CAmount, bool>> mCPIDRain;
 
     for (const auto& entry : mScraperConvergedStats)
     {
@@ -1184,7 +1184,7 @@ UniValue rainbymagnitude(const UniValue& params, bool fHelp)
             // Zero mag CPIDs do not get paid.
             if (!dCPIDMag) continue;
 
-            CBitcoinAddress address;
+            CTxDestination address;
 
             // If the beacon is active get the address and insert an entry into the map for payment,
             // otherwise skip.
@@ -1241,7 +1241,7 @@ UniValue rainbymagnitude(const UniValue& params, bool fHelp)
     {
         // Make it easier to read.
         const GRC::Cpid& cpid = iter.first;
-        const CBitcoinAddress& address = std::get<0>(iter.second);
+        const CTxDestination& address = std::get<0>(iter.second);
         const double& magnitude = std::get<1>(iter.second);
 
         // This is not a const reference on purpose because it has to be renormalized.
@@ -1656,7 +1656,7 @@ UniValue pendingbeaconreport(const UniValue& params, bool fHelp)
     {
         UniValue entry(UniValue::VOBJ);
 
-        CBitcoinAddress address;
+        CTxDestination address;
         const CKeyID& key_id = pending_beacon_pair.first;
 
         address.Set(key_id);
@@ -2387,7 +2387,7 @@ UniValue addkey(const UniValue& params, bool fHelp)
         std::string status_string = ToLower(params[3].get_str());
         GRC::ScraperEntryStatus status = GRC::ScraperEntryStatus::UNKNOWN;
 
-        CBitcoinAddress scraper_address;
+        CTxDestination scraper_address;
         if (!scraper_address.SetString(params[2].get_str())) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Address specified for the scraper is invalid.");
         }
@@ -2447,7 +2447,7 @@ UniValue addkey(const UniValue& params, bool fHelp)
     case GRC::ContractType::SIDESTAKE:
     {
         if (block_v13_enabled) {
-            CBitcoinAddress sidestake_address;
+            CTxDestination sidestake_address;
             if (!sidestake_address.SetString(params[2].get_str())) {
                 throw JSONRPCError(RPC_INVALID_PARAMETER, "Address specified for the sidestake is invalid.");
             }
@@ -2618,7 +2618,7 @@ UniValue listscrapers(const UniValue& params, bool fHelp)
     for (const auto& scraper : GRC::GetScraperRegistry().Scrapers()) {
         UniValue entry(UniValue::VOBJ);
 
-        CBitcoinAddress address(scraper.first);
+        CTxDestination address(scraper.first);
 
         entry.pushKV("scraper_address", address.ToString());
         entry.pushKV("current_scraper_entry_tx_hash", scraper.second->m_hash.ToString());

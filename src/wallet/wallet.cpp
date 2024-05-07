@@ -55,9 +55,9 @@ struct CompareValueOnly
 // Class: CWallet
 // -----------------------------------------------------------------------------
 
-const CBitcoinAddress CWallet::MasterAddress(int height)
+const CTxDestination CWallet::MasterAddress(int height)
 {
-    CBitcoinAddress master_address;
+    CTxDestination master_address;
     master_address.Set(CPubKey(Params().MasterKey(height)).GetID());
 
     return master_address;

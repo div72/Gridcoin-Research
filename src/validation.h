@@ -17,7 +17,7 @@ class CBlockHeader;
 namespace Consensus {
     struct Params;
 }
-class CBitcoinAddress;
+class CTxDestination;
 namespace GRC {
     class MRC;
 }
@@ -111,7 +111,7 @@ bool CheckBlockSignature(const CBlock& block);
 unsigned int GetCoinstakeOutputLimit(const int& block_version);
 unsigned int GetMandatorySideStakeOutputLimit(const int& block_version);
 Fraction FoundationSideStakeAllocation();
-CBitcoinAddress FoundationSideStakeAddress();
+CTxDestination FoundationSideStakeAddress();
 unsigned int GetMRCOutputLimit(const int& block_version, bool include_foundation_sidestake);
 bool ValidateMRC(const GRC::Contract &contract, const CTransaction& tx, int& DoS);
 bool ValidateMRC(const CBlockIndex* mrc_last_pindex, const GRC::MRC& mrc);

@@ -1,6 +1,6 @@
 #include "transactionrecord.h"
 #include "wallet/wallet.h"
-#include "base58.h"
+#include <key_io.h>
 #include <QObject>
 
 /* Return positive answer if transaction should be shown in list. */

@@ -32,7 +32,7 @@ namespace {
 //!
 std::string DestinationToAddressString(const CTxDestination dest)
 {
-    CBitcoinAddress address;
+    CTxDestination address;
     address.Set(dest);
 
     return address.ToString();

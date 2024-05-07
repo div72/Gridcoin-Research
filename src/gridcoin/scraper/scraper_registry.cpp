@@ -52,7 +52,7 @@ ScraperEntry::ScraperEntry(CKeyID key_id, Status status, int64_t tx_timestamp, u
 
 bool ScraperEntry::WellFormed() const
 {
-    return (CBitcoinAddress(m_key).IsValid()
+    return (IsValidDestination(CTxDestination(m_key))
             && m_status != ScraperEntryStatus::UNKNOWN
             && m_status != ScraperEntryStatus::OUT_OF_BOUND);
 }
@@ -72,9 +72,9 @@ CKeyID ScraperEntry::GetId() const
     return m_key;
 }
 
-CBitcoinAddress ScraperEntry::GetAddress() const
+CTxDestination ScraperEntry::GetAddress() const
 {
-    return CBitcoinAddress(m_key);
+    return m_key;
 }
 
 std::string ScraperEntry::StatusToString() const
@@ -186,7 +186,7 @@ ScraperEntryPayload::ScraperEntryPayload(const std::string& key, const std::stri
 {
     m_version = 1;
 
-    CBitcoinAddress address;
+    CTxDestination address;
 
     address.SetString(m_key);
 
@@ -210,7 +210,7 @@ ScraperEntryPayload::ScraperEntryPayload(const std::string& key, const std::stri
 
 ScraperEntryPayload ScraperEntryPayload::Parse(const std::string& key, const std::string& value)
 {
-    CBitcoinAddress address;
+    CTxDestination address;
 
     address.SetString(key);
 
@@ -383,7 +383,7 @@ void ScraperRegistry::AddDelete(const ContractContext& ctx)
         payload.m_scraper_entry.m_previous_hash = uint256 {};
     }
 
-    CBitcoinAddress address;
+    CTxDestination address;
     address.Set(payload.m_scraper_entry.m_key);
 
     LogPrint(LogFlags::SCRAPER, "INFO: %s: scraper entry add/delete: contract m_version = %u, payload "
@@ -448,7 +448,7 @@ void ScraperRegistry::Revert(const ContractContext& ctx)
         return;
     }
 
-    CBitcoinAddress address = entry_to_revert->second->GetAddress();
+    CTxDestination address = entry_to_revert->second->GetAddress();
 
     // If this is not a null hash, then there will be a prior entry to resurrect.
     uint256 resurrect_hash = entry_to_revert->second->m_previous_hash;

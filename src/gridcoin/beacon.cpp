@@ -2,7 +2,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
-#include "base58.h"
+#include <key_io.h>
 #include "logging.h"
 #include "main.h"
 #include "gridcoin/beacon.h"
@@ -184,9 +184,9 @@ CKeyID Beacon::GetId() const
     return m_public_key.GetID();
 }
 
-CBitcoinAddress Beacon::GetAddress() const
+CTxDestination Beacon::GetAddress() const
 {
-    return CBitcoinAddress(CTxDestination(m_public_key.GetID()));
+    return CTxDestination(m_public_key.GetID());
 }
 
 std::string Beacon::GetVerificationCode() const

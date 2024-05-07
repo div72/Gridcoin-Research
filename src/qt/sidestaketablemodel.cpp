@@ -342,7 +342,7 @@ QString SideStakeTableModel::addRow(const QString &address, const QString &alloc
 {
     GRC::SideStakeRegistry& registry = GRC::GetSideStakeRegistry();
 
-    CBitcoinAddress sidestake_address;
+    CTxDestination sidestake_address;
     sidestake_address.SetString(address.toStdString());
 
     m_edit_status = OK;

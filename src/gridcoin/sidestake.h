@@ -5,7 +5,7 @@
 #ifndef GRIDCOIN_SIDESTAKE_H
 #define GRIDCOIN_SIDESTAKE_H
 
-#include "base58.h"
+#include <key_io.h>
 #include "gridcoin/contract/handler.h"
 #include "gridcoin/contract/payload.h"
 #include "gridcoin/contract/registry_db.h"

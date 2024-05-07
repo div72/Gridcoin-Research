@@ -232,7 +232,7 @@ UniValue getnewaddress(const UniValue& params, bool fHelp)
 }
 
 
-CBitcoinAddress GetAccountAddress(string strAccount, bool bForceNew=false) EXCLUSIVE_LOCKS_REQUIRED(pwalletMain->cs_wallet)
+CTxDestination GetAccountAddress(string strAccount, bool bForceNew=false) EXCLUSIVE_LOCKS_REQUIRED(pwalletMain->cs_wallet)
 {
     CWalletDB walletdb(pwalletMain->strWalletFile);
 
@@ -267,7 +267,7 @@ CBitcoinAddress GetAccountAddress(string strAccount, bool bForceNew=false) EXCLU
         walletdb.WriteAccount(strAccount, account);
     }
 
-    return CBitcoinAddress(account.vchPubKey.GetID());
+    return CTxDestination(account.vchPubKey.GetID());
 }
 
 UniValue getaccountaddress(const UniValue& params, bool fHelp)
@@ -300,7 +300,7 @@ UniValue setaccount(const UniValue& params, bool fHelp)
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
 
-    CBitcoinAddress address(params[0].get_str());
+    CTxDestination address(params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Gridcoin address");
 
@@ -332,7 +332,7 @@ UniValue getaccount(const UniValue& params, bool fHelp)
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
 
-    CBitcoinAddress address(params[0].get_str());
+    CTxDestination address(params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Gridcoin address");
 
@@ -363,7 +363,7 @@ UniValue getaddressesbyaccount(const UniValue& params, bool fHelp)
 
     for (auto const& item : pwalletMain->mapAddressBook)
     {
-        const CBitcoinAddress& address = item.first;
+        const CTxDestination& address = item.first;
         const string& strName = item.second;
         if (strName == strAccount)
             ret.push_back(address.ToString());
@@ -388,7 +388,7 @@ UniValue sendtoaddress(const UniValue& params, bool fHelp)
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
 
-    CBitcoinAddress address(params[0].get_str());
+    CTxDestination address(params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Gridcoin address");
 
@@ -463,7 +463,7 @@ UniValue signmessage(const UniValue& params, bool fHelp)
     string strAddress = params[0].get_str();
     string strMessage = params[1].get_str();
 
-    CBitcoinAddress addr(strAddress);
+    CTxDestination addr(strAddress);
     if (!addr.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
 
@@ -500,7 +500,7 @@ UniValue verifymessage(const UniValue& params, bool fHelp)
 
     LOCK(cs_main);
 
-    CBitcoinAddress addr(strAddress);
+    CTxDestination addr(strAddress);
     if (!addr.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
 
@@ -537,7 +537,7 @@ UniValue getreceivedbyaddress(const UniValue& params, bool fHelp)
     LOCK2(cs_main, pwalletMain->cs_wallet);
 
     // Bitcoin address
-    CBitcoinAddress address = CBitcoinAddress(params[0].get_str());
+    CTxDestination address = CTxDestination(params[0].get_str());
     CScript scriptPubKey;
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Gridcoin address");
@@ -805,7 +805,7 @@ UniValue getbalancedetail(const UniValue& params, bool fHelp)
             {
                 std::string addressStr;
 
-                CBitcoinAddress addr;
+                CTxDestination addr;
                 addressStr = addr.Set(r.destination) ? addr.ToString() : std::string {};
 
                 nBalance += r.amount;
@@ -825,7 +825,7 @@ UniValue getbalancedetail(const UniValue& params, bool fHelp)
         {
             std::string addressStr;
 
-            CBitcoinAddress addr;
+            CTxDestination addr;
             addressStr = addr.Set(s.destination) ? addr.ToString() : std::string {};
 
             nBalance -= s.amount;
@@ -954,7 +954,7 @@ UniValue sendfrom(const UniValue& params, bool fHelp)
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
 
-    CBitcoinAddress address(params[1].get_str());
+    CTxDestination address(params[1].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Gridcoin address");
     int64_t nAmount = AmountFromValue(params[2]);
@@ -1020,14 +1020,14 @@ UniValue sendmany(const UniValue& params, bool fHelp)
     if (params.size() > 3 && !params[3].isNull() && !params[3].get_str().empty())
         wtx.mapValue["comment"] = params[3].get_str();
 
-    set<CBitcoinAddress> setAddress;
+    set<CTxDestination> setAddress;
     vector<pair<CScript, int64_t> > vecSend;
     vector<string> addrList = sendTo.getKeys();
 
     int64_t totalAmount = 0;
     for (auto const& name_: addrList)
     {
-        CBitcoinAddress address(name_);
+        CTxDestination address(name_);
         if (!address.IsValid())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Gridcoin address: ")+name_);
 
@@ -1136,7 +1136,7 @@ UniValue addmultisigaddress(const UniValue& params, bool fHelp)
         const std::string& ks = keys[i].get_str();
 
         // Case 1: Bitcoin address and we have full public key:
-        CBitcoinAddress address(ks);
+        CTxDestination address(ks);
         if (address.IsValid())
         {
             CKeyID keyID;
@@ -1238,7 +1238,7 @@ UniValue ListReceived(const UniValue& params, bool fByAccounts) EXCLUSIVE_LOCKS_
         fIncludeEmpty = params[1].get_bool();
 
     // Tally
-    map<CBitcoinAddress, tallyitem> mapTally;
+    map<CTxDestination, tallyitem> mapTally;
     for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
     {
         const CWalletTx& wtx = it->second;
@@ -1276,9 +1276,9 @@ UniValue ListReceived(const UniValue& params, bool fByAccounts) EXCLUSIVE_LOCKS_
 
     for (auto const& item : pwalletMain->mapAddressBook)
     {
-        const CBitcoinAddress& address = item.first;
+        const CTxDestination& address = item.first;
         const string& strAccount = item.second;
-        map<CBitcoinAddress, tallyitem>::iterator it = mapTally.find(address);
+        map<CTxDestination, tallyitem>::iterator it = mapTally.find(address);
         if (it == mapTally.end() && !fIncludeEmpty)
             continue;
 
@@ -1419,7 +1419,7 @@ UniValue listreceivedbyaccount(const UniValue& params, bool fHelp)
 
             std::string addressStr;
 
-            CBitcoinAddress addr;
+            CTxDestination addr;
             addressStr = addr.Set(s.destination) ? addr.ToString() : std::string {};
 
             entry.pushKV("address", addressStr);
@@ -1480,7 +1480,7 @@ UniValue listreceivedbyaccount(const UniValue& params, bool fHelp)
 
                 std::string addressStr;
 
-                CBitcoinAddress addr;
+                CTxDestination addr;
                 addressStr = addr.Set(r.destination) ? addr.ToString() : std::string {};
 
                 entry.pushKV("address", addressStr);
@@ -2456,7 +2456,7 @@ UniValue validateaddress(const UniValue& params, bool fHelp)
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
 
-    CBitcoinAddress address(params[0].get_str());
+    CTxDestination address(params[0].get_str());
     bool isValid = address.IsValid();
 
     UniValue ret(UniValue::VOBJ);
@@ -2502,7 +2502,7 @@ UniValue validatepubkey(const UniValue& params, bool fHelp)
     bool isCompressed = pubKey.IsCompressed();
     CKeyID keyID = pubKey.GetID();
 
-    CBitcoinAddress address;
+    CTxDestination address;
     address.Set(keyID);
 
     UniValue ret(UniValue::VOBJ);

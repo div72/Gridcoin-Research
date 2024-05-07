@@ -13,7 +13,7 @@
 #include "rpc/server.h"
 #include "rpc/protocol.h"
 #ifdef SCRAPER_NET_PK_AS_ADDRESS
-#include "base58.h"
+#include <key_io.h>
 #endif
 #include "gridcoin/appcache.h"
 #include "gridcoin/project.h"
@@ -352,7 +352,7 @@ EXCLUSIVE_LOCKS_REQUIRED(CScraperManifest::cs_mapManifest)
 
     CKeyID ManifestKeyID = PubKey.GetID();
 
-    CBitcoinAddress ManifestAddress;
+    CTxDestination ManifestAddress;
     ManifestAddress.Set(ManifestKeyID);
 
     // This is the address corresponding to the manifest public key.

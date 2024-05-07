@@ -625,8 +625,8 @@ Fraction FoundationSideStakeAllocation()
     return Fraction(4, 5);
 }
 
-CBitcoinAddress FoundationSideStakeAddress() {
-    CBitcoinAddress foundation_address;
+CTxDestination FoundationSideStakeAddress() {
+    CTxDestination foundation_address;
 
     // If on testnet set foundation destination address to test wallet address
     if (fTestNet) {
@@ -1352,7 +1352,7 @@ private:
                                 const GRC::BeaconOption beacon = GRC::GetBeaconRegistry().TryActive(*cpid, mrc_index->nTime);
 
                                 if (beacon) {
-                                    CBitcoinAddress beacon_address = beacon->GetAddress();
+                                    CTxDestination beacon_address = beacon->GetAddress();
                                     CScript script_beacon_key;
                                     script_beacon_key.SetDestination(beacon_address.Get());
 

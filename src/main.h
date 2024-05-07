@@ -33,7 +33,7 @@ class CKeyItem;
 class CReserveKey;
 class COutPoint;
 class CAddress;
-class CBitcoinAddress;
+class CTxDestination;
 class CInv;
 class CNode;
 class CTxMemPool;

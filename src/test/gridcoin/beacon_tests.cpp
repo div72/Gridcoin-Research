@@ -2,7 +2,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
-#include "base58.h"
+#include <key_io.h>
 #include "dbwrapper.h"
 #include "gridcoin/beacon.h"
 #include "rpc/blockchain.h"
@@ -71,9 +71,9 @@ struct TestKey
     //!
     //! \brief Create an address from the test public key.
     //!
-    static CBitcoinAddress Address()
+    static CTxDestination Address()
     {
-        return CBitcoinAddress(CTxDestination(KeyId()));
+        return CTxDestination(CTxDestination(KeyId()));
     }
 
     //!

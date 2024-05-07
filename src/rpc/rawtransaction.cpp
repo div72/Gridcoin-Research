@@ -456,13 +456,13 @@ UniValue listunspent(const UniValue& params, bool fHelp)
     if (params.size() > 1)
         nMaxDepth = params[1].get_int();
 
-    set<CBitcoinAddress> setAddress;
+    set<CTxDestination> setAddress;
     if (params.size() > 2)
     {
         UniValue inputs = params[2].get_array();
         for (unsigned int ix = 0; ix < inputs.size(); ix++)
         {
-            CBitcoinAddress address(inputs[ix].get_str());
+            CTxDestination address(inputs[ix].get_str());
             if (!address.IsValid())
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Gridcoin address: ")+inputs[ix].get_str());
             if (setAddress.count(address))
@@ -567,7 +567,7 @@ UniValue consolidateunspent(const UniValue& params, bool fHelp)
     UniValue result(UniValue::VOBJ);
 
     std::string sAddress = params[0].get_str();
-    CBitcoinAddress OptimizeAddress(sAddress);
+    CTxDestination OptimizeAddress(sAddress);
 
     int64_t nConsolidateLimit = 0;
     unsigned int nInputNumberLimit = GetMaxInputsForConsolidationTxn();
@@ -623,7 +623,7 @@ UniValue consolidateunspent(const UniValue& params, bool fHelp)
 
         // If the UTXO matches the consolidation address or all sweep_all_addresses is true then add to the inputs
         // map for consolidation. Note that the value of sweep_change is ignored and all change will be swept.
-        if (CBitcoinAddress(out_address) == OptimizeAddress || sweep_all_addresses)
+        if (CTxDestination(out_address) == OptimizeAddress || sweep_all_addresses)
         {
             mInputs.insert(std::make_pair(nOutValue, out));
         }
@@ -684,7 +684,7 @@ UniValue consolidateunspent(const UniValue& params, bool fHelp)
                     // to the inputs map for consolidation.
                     if (ExtractDestination(prev_ctxout.scriptPubKey, change_input_address))
                     {
-                        if (CBitcoinAddress(change_input_address) == OptimizeAddress)
+                        if (CTxDestination(change_input_address) == OptimizeAddress)
                         {
                             // Insert the ORIGINAL change UTXO into the input map for the consolidation.
                             mInputs.insert(std::make_pair(nOutValue, out));
@@ -999,7 +999,7 @@ UniValue consolidatemsunspent(const UniValue& params, bool fHelp)
     if (nMaxValue < 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Value must not be less than 0");
 
-    CBitcoinAddress Address(sAddress);
+    CTxDestination Address(sAddress);
 
     // Check if the address is valid
     if (!Address.IsValid())
@@ -1149,7 +1149,7 @@ UniValue consolidatemsunspent(const UniValue& params, bool fHelp)
                         continue;
 
                     // If we found a match to multisig address do our work
-                    if (CBitcoinAddress(txaddress) == Address)
+                    if (CTxDestination(txaddress) == Address)
                     {
                         // Check if this output is already spent
                         COutPoint dummy = COutPoint(tx.GetHash(), j);
@@ -1290,7 +1290,7 @@ UniValue scanforunspent(const UniValue& params, bool fHelp)
     if (nBlockEnd < 1 || nBlockEnd > nBestHeight || nBlockEnd <= nBlockStart)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid block-end");
 
-    CBitcoinAddress Address(sAddress);
+    CTxDestination Address(sAddress);
 
     if (!Address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Gridcoin Address");
@@ -1340,7 +1340,7 @@ UniValue scanforunspent(const UniValue& params, bool fHelp)
                         continue;
 
                     // If we found a match to multisig address do our work
-                    if (CBitcoinAddress(txaddress) == Address)
+                    if (CTxDestination(txaddress) == Address)
                     {
                         // Check if this output is already spent
                         COutPoint dummy = COutPoint(tx.GetHash(), j);
@@ -1547,11 +1547,11 @@ UniValue createrawtransaction(const UniValue& params, bool fHelp)
         rawTx.vin.push_back(in);
     }
 
-    set<CBitcoinAddress> setAddress;
+    set<CTxDestination> setAddress;
     vector<string> addrList = sendTo.getKeys();
     for (auto const& name_: addrList)
     {
-        CBitcoinAddress address(name_);
+        CTxDestination address(name_);
         if (name_ == "data")
         {
             std::vector<unsigned char> data = ParseHexV(sendTo[name_],"Data");
@@ -1560,7 +1560,7 @@ UniValue createrawtransaction(const UniValue& params, bool fHelp)
         }
         else
         {
-            CBitcoinAddress address(name_);
+            CTxDestination address(name_);
             if (!address.IsValid())
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Gridcoin address: ")+name_);
 

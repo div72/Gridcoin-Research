@@ -208,7 +208,7 @@ bool CWallet::LoadCScript(const CScript& redeemScript)
      * these. Do not add them to the wallet and warn. */
     if (redeemScript.size() > MAX_SCRIPT_ELEMENT_SIZE)
     {
-        std::string strAddr = CBitcoinAddress(redeemScript.GetID()).ToString();
+        std::string strAddr = EncodeDestination(redeemScript.GetID());
         LogPrintf("%s: Warning: This wallet contains a redeemScript of size %" PRIszu " which exceeds maximum size %i thus can never be redeemed. Do not use address %s.",
             __func__, redeemScript.size(), MAX_SCRIPT_ELEMENT_SIZE, strAddr);
         return true;
@@ -2136,7 +2136,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
                     // coin control: send change to custom address
                     if (coinControl && !std::get_if<CNoDestination>(&coinControl->destChange)) {
                         LogPrintf("INFO: %s: Setting custom change address: %s", __func__,
-                                  CBitcoinAddress(coinControl->destChange).ToString());
+                                  EncodeDestination(coinControl->destChange));
 
                         scriptChange.SetDestination(coinControl->destChange);
                     } else { // no coin control

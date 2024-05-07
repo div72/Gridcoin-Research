@@ -796,7 +796,7 @@ void SideStakeRegistry::Revert(const ContractContext& ctx)
     if (entry_to_revert == m_mandatory_sidestake_entries.end()) {
         error("%s: The SideStake entry for key %s to revert was not found in the SideStake entry map.",
               __func__,
-              CBitcoinAddress(entry_to_revert->second->m_destination).ToString());
+              EncodeDestination(entry_to_revert->second->m_destination));
 
         // If there is no record in the current m_sidestake_entries map, then there is nothing to do here. This
         // should not occur.
@@ -1117,7 +1117,7 @@ bool SideStakeRegistry::SaveLocalSideStakesToConfig()
             separator = ",";
         }
 
-        addresses += separator + CBitcoinAddress(iter.second->m_destination).ToString();
+        addresses += separator + EncodeDestination(iter.second->m_destination);
         allocations += separator + ToString(iter.second->m_allocation.ToPercent());
         descriptions += separator + iter.second->m_description;
 

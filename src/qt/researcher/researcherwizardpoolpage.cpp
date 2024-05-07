@@ -105,7 +105,7 @@ void ResearcherWizardPoolPage::getNewAddress()
     }
 
     ui->addressLabel->setText(
-        QString::fromStdString(CBitcoinAddress(public_key.GetID()).ToString()));
+        QString::fromStdString(EncodeDestination(public_key.GetID())));
     ui->copyToClipboardButton->setVisible(true);
 }
 

@@ -2689,7 +2689,7 @@ UniValue listmandatorysidestakes(const UniValue& params, bool fHelp)
     for (const auto& sidestake : GRC::GetSideStakeRegistry().ActiveSideStakeEntries(GRC::SideStake::FilterFlag::MANDATORY, false)) {
         UniValue entry(UniValue::VOBJ);
 
-        entry.pushKV("mandatory_sidestake_entry_address", CBitcoinAddress(sidestake->GetDestination()).ToString());
+        entry.pushKV("mandatory_sidestake_entry_address", EncodeDestination(sidestake->GetDestination()));
         entry.pushKV("mandatory_sidestake_entry_allocation", sidestake->GetAllocation().ToPercent());
         entry.pushKV("mandatory_sidestake_entry_tx_hash", sidestake->GetHash().ToString());
         if (sidestake->GetPreviousHash().IsNull()) {

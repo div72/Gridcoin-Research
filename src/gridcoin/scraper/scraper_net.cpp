@@ -857,7 +857,7 @@ UniValue CScraperManifest::ToJson() const EXCLUSIVE_LOCKS_REQUIRED(CSplitBlob::c
     UniValue r(UniValue::VOBJ);
 
 #ifdef SCRAPER_NET_PK_AS_ADDRESS
-    r.pushKV("pubkey", CBitcoinAddress(pubkey.GetID()).ToString());
+    r.pushKV("pubkey", EncodeDestination(pubkey.GetID()));
 #else
     r.pushKV("pubkey", pubkey.GetID().ToString());
 #endif
@@ -950,7 +950,7 @@ UniValue listmanifests(const UniValue& params, bool fHelp)
         else
         {
 #ifdef SCRAPER_NET_PK_AS_ADDRESS
-            subset.pushKV("scraper (manifest) address", CBitcoinAddress(manifest.pubkey.GetID()).ToString());
+            subset.pushKV("scraper (manifest) address", EncodeDestination(manifest.pubkey.GetID()));
 #else
             subset.pushKV("scraper (manifest) pubkey", manifest.pubkey.GetID().ToString());
 #endif
@@ -973,7 +973,7 @@ UniValue listmanifests(const UniValue& params, bool fHelp)
             else
             {
     #ifdef SCRAPER_NET_PK_AS_ADDRESS
-                subset.pushKV("scraper (manifest) address", CBitcoinAddress(manifest.pubkey.GetID()).ToString());
+                subset.pushKV("scraper (manifest) address", EncodeDestination(manifest.pubkey.GetID()));
     #else
                 subset.pushKV("scraper (manifest) pubkey", manifest.pubkey.GetID().ToString());
     #endif

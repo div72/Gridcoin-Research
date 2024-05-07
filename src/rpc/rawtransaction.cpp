@@ -1631,7 +1631,7 @@ UniValue decodescript(const UniValue& params, bool fHelp)
     }
     ScriptPubKeyToJSON(script, r, false);
 
-    r.pushKV("p2sh", CBitcoinAddress(script.GetID()).ToString());
+    r.pushKV("p2sh", EncodeDestination(script.GetID()));
     return r;
 }
 

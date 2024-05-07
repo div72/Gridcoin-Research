@@ -154,7 +154,7 @@ QVariant SideStakeTableModel::data(const QModelIndex &index, int role) const
     if (role == Qt::DisplayRole) {
         switch (column) {
         case Address:
-            return QString::fromStdString(CBitcoinAddress(rec->GetDestination()).ToString());
+            return QString::fromStdString(EncodeDestination(rec->GetDestination()));
         case Allocation:
             return QString().setNum(rec->GetAllocation().ToPercent(), 'f', 2) + QString("\%");
         case Description:
@@ -166,7 +166,7 @@ QVariant SideStakeTableModel::data(const QModelIndex &index, int role) const
     } else if (role == Qt::EditRole) {
         switch (column) {
         case Address:
-            return QString::fromStdString(CBitcoinAddress(rec->GetDestination()).ToString());
+            return QString::fromStdString(EncodeDestination(rec->GetDestination()));
         case Allocation:
             return QString().setNum(rec->GetAllocation().ToPercent(), 'f', 2);
         case Description:

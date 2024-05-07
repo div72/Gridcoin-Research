@@ -365,7 +365,7 @@ QString AddressTableModel::addRow(const QString &type, const QString &label, con
             editStatus = KEY_GENERATION_FAILURE;
             return QString();
         }
-        strAddress = CBitcoinAddress(newKey.GetID()).ToString();
+        strAddress = EncodeDestination(newKey.GetID());
     }
     else
     {

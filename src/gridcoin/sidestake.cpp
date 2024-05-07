@@ -718,7 +718,7 @@ void SideStakeRegistry::AddDelete(const ContractContext& ctx)
              __func__,
              ctx->m_version,
              payload.m_version,
-             CBitcoinAddress(payload.m_entry.m_destination).ToString(),
+             EncodeDestination(payload.m_entry.m_destination),
              payload.m_entry.m_allocation.ToPercent(),
              payload.m_entry.m_timestamp,
              payload.m_entry.m_hash.ToString(),
@@ -734,7 +734,7 @@ void SideStakeRegistry::AddDelete(const ContractContext& ctx)
                                      "the SideStake entry db record already exists. This can be expected on a restart "
                                      "of the wallet to ensure multiple contracts in the same block get stored/replayed.",
                  __func__,
-                 CBitcoinAddress(historical.m_destination).ToString(),
+                 EncodeDestination(historical.m_destination),
                  historical.m_allocation.ToPercent(),
                  historical.m_hash.GetHex());
     }

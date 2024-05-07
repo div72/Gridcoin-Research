@@ -572,7 +572,7 @@ public:
                                                 "m_entry.StatusToString() = %s",
                      __func__,
                      valid,
-                     CBitcoinAddress(m_entry.m_destination).ToString(),
+                     EncodeDestination(m_entry.m_destination),
                      m_entry.m_allocation.ToPercent(),
                      m_entry.StatusToString()
                      );
@@ -588,7 +588,7 @@ public:
     //!
     std::string LegacyKeyString() const override
     {
-        return CBitcoinAddress(m_entry.m_destination).ToString();
+        return EncodeDestination(m_entry.m_destination);
     }
 
     //!

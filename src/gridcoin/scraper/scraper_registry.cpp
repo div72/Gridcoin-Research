@@ -270,7 +270,7 @@ const AppCacheSectionExt ScraperRegistry::GetScrapersLegacyExt(const bool& autho
 
     for (const auto& entry : m_scrapers) {
 
-        std::string key = CBitcoinAddress(entry.first).ToString();
+        std::string key = EncodeDestination(entry.first);
 
         switch (entry.second->m_status.Value()) {
         case ScraperEntryStatus::DELETED:
